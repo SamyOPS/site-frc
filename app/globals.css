@@ -148,6 +148,26 @@
   background-size: 64px 64px;
 }
 
+/* Curseur personnalisé : flèche épurée */
+@media (pointer: fine) {
+  body {
+    cursor: url("/cursor-arrow.svg") 5 5, auto;
+  }
+  a,
+  button,
+  [role="button"],
+  label,
+  summary,
+  select,
+  .cursor-pointer {
+    cursor: url("/cursor-arrow.svg") 5 5, pointer;
+  }
+  input,
+  textarea {
+    cursor: text;
+  }
+}
+
 /* Scroll-reveal animations (désactivées si l'utilisateur préfère moins d'animations) */
 @media (prefers-reduced-motion: no-preference) {
   .reveal {

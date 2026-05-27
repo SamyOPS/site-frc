@@ -10,7 +10,8 @@
       "Bash(mv \"harnais antichute.png\" \"port-du-harnais.png\")",
       "Bash(mv \"sécurité incendie.png\" \"securite-incendie.png\")",
       "Bash(mv \"habilitation éléectrique.png\" \"habilitations-electriques.png\")",
-      "Bash(mv \"AIPR.png\" \"aipr.png\")"
+      "Bash(mv \"AIPR.png\" \"aipr.png\")",
+      "PowerShell(npm run build)"
     ],
     "additionalDirectories": [
       "c:\\Users\\azeez\\Desktop\\site-frc\\public"
