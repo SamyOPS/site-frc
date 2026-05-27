@@ -14,7 +14,7 @@ export function Footer() {
               alt="FRC Technique — Centre de formation"
               width={760}
               height={370}
-              className="h-20 md:h-24 w-auto invert mix-blend-screen"
+              className="h-28 md:h-32 w-auto invert mix-blend-screen"
             />
           </Link>
           <p className="mt-6 text-sm leading-relaxed text-white/55 max-w-sm normal-case">

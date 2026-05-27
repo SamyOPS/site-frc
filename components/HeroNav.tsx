@@ -368,12 +368,19 @@ function MobileAccordion({
   );
 }
 
-function NavList() {
+function NavList({ variant }: { variant: "dark" | "light" }) {
   const pathname = usePathname();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [shownMenu, setShownMenu] = useState<string | null>(null);
   const [priceMap, setPriceMap] = useState<Record<string, number>>({});
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const activeColor = variant === "light" ? "text-ink" : "text-white";
+  const inactiveColor =
+    variant === "light"
+      ? "text-ink/60 hover:text-ink"
+      : "text-white/75 hover:text-white";
+  const underlineColor = variant === "light" ? "bg-ink" : "bg-white";
 
   useEffect(() => {
     let active = true;
@@ -448,7 +455,7 @@ function NavList() {
                   onBlur={scheduleClose}
                   onClick={() => toggleClick(link.label)}
                   className={`${linkClass} ${
-                    isActive ? "text-white" : "text-white/75 hover:text-white"
+                    isActive ? activeColor : inactiveColor
                   }`}
                 >
                   <span className="sm:hidden">
@@ -469,14 +476,14 @@ function NavList() {
               <Link
                 href={link.href!}
                 className={`${linkClass} ${
-                  active ? "text-white" : "text-white/75 hover:text-white"
+                  active ? activeColor : inactiveColor
                 }`}
               >
                 <span>{link.label}</span>
                 {active && (
                   <span
                     aria-hidden="true"
-                    className="absolute -bottom-1 left-0 right-0 h-px bg-white"
+                    className={`absolute -bottom-1 left-0 right-0 h-px ${underlineColor}`}
                   />
                 )}
               </Link>
@@ -498,10 +505,17 @@ function NavList() {
   );
 }
 
-export function HeroNav() {
+export function HeroNav({
+  variant = "dark",
+}: {
+  variant?: "dark" | "light";
+}) {
+  const logoClass =
+    variant === "light" ? "mix-blend-multiply" : "invert mix-blend-screen";
+
   return (
-    <div className="w-full text-white">
-      <div className="container-x flex flex-col items-center gap-3 py-4 md:flex-row md:justify-between md:items-center md:gap-6 md:py-0 md:h-20">
+    <div className={`w-full ${variant === "light" ? "text-ink" : "text-white"}`}>
+      <div className="container-x flex flex-col items-center gap-3 py-4 md:flex-row md:justify-between md:items-center md:gap-6 md:py-0 md:h-28">
         <Link
           href="/"
           className="flex items-center shrink-0"
@@ -513,7 +527,7 @@ export function HeroNav() {
             width={760}
             height={370}
             priority
-            className="h-10 sm:h-12 md:h-12 lg:h-14 w-auto invert mix-blend-screen"
+            className={`h-14 sm:h-16 md:h-16 lg:h-20 w-auto ${logoClass}`}
           />
         </Link>
 
@@ -521,7 +535,7 @@ export function HeroNav() {
           aria-label="Navigation principale"
           className="w-full md:w-auto flex flex-col items-center md:flex-row md:items-stretch"
         >
-          <NavList />
+          <NavList variant={variant} />
         </nav>
       </div>
     </div>

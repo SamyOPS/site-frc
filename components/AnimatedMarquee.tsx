@@ -38,7 +38,7 @@ export function AnimatedMarquee() {
           {loopA.map((img, i) => (
             <div
               key={`a-${i}`}
-              className="shrink-0 border-2 border-white bg-ink/20"
+              className="shrink-0 border border-rule bg-light"
             >
               <Image
                 src={img}
@@ -57,7 +57,7 @@ export function AnimatedMarquee() {
           {loopB.map((img, i) => (
             <div
               key={`b-${i}`}
-              className="shrink-0 border-2 border-white bg-ink/20"
+              className="shrink-0 border border-rule bg-light"
             >
               <Image
                 src={img}
