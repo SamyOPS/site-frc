@@ -49,7 +49,7 @@ export default async function FormationPage({ params }: { params: Params }) {
 
   return (
     <>
-      <div className="bg-primary">
+      <div className="bg-ink">
         <HeroNav />
       </div>
 

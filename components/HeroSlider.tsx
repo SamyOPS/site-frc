@@ -8,51 +8,31 @@ import franceTravailLogo from "@/public/France-travail-2023.svg.png";
 
 export function HeroSlider() {
   return (
-    <section className="relative overflow-hidden bg-primary text-white min-h-[560px] md:min-h-[70vh] flex flex-col">
+    <section className="relative overflow-hidden bg-ink text-white min-h-[560px] md:min-h-[70vh] flex flex-col">
       <span
         aria-hidden="true"
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 35%, rgba(0,0,0,0.22) 100%)",
-        }}
-      />
-      <span
-        aria-hidden="true"
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(circle at 92% 8%, rgba(220,252,231,0.22) 0%, transparent 45%)",
-        }}
-      />
-      <span
-        aria-hidden="true"
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(circle at 8% 95%, rgba(0,0,0,0.28) 0%, transparent 55%)",
+            "radial-gradient(circle at 88% 12%, rgba(22,163,74,0.22) 0%, transparent 50%)",
         }}
       />
       <div
-        className="absolute inset-0 grid-bg opacity-25 pointer-events-none"
+        className="absolute inset-0 grid-bg opacity-40 pointer-events-none"
         aria-hidden="true"
       />
 
       <div
         aria-hidden="true"
-        className="absolute -top-32 -right-32 w-[420px] h-[420px] rounded-full border border-white/15 pointer-events-none"
+        className="absolute -top-32 -right-32 w-[420px] h-[420px] rounded-full border border-white/10 pointer-events-none"
       />
       <div
         aria-hidden="true"
-        className="absolute top-1/4 -left-24 w-72 h-72 rounded-full bg-white/8 blur-3xl pointer-events-none"
+        className="absolute top-1/4 -left-24 w-72 h-72 rounded-full bg-primary/15 blur-3xl pointer-events-none"
       />
       <div
         aria-hidden="true"
-        className="absolute -bottom-40 left-1/3 w-[480px] h-[480px] rounded-full border border-white/10 pointer-events-none"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute bottom-1/4 right-1/3 w-40 h-40 rounded-full border border-white/20 pointer-events-none"
+        className="absolute bottom-1/4 right-1/3 w-40 h-40 rounded-full border border-primary/30 pointer-events-none"
       />
 
       <div className="relative flex flex-col flex-1">
@@ -93,10 +73,16 @@ export function HeroSlider() {
             <div className="mt-10 flex flex-col sm:flex-row gap-3">
               <Link
                 href="/contact"
-                className="inline-flex items-center justify-center gap-2.5 bg-ink text-white border border-ink px-7 py-4 text-[11px] font-medium uppercase tracking-[0.2em] hover:bg-white hover:text-ink hover:border-white transition-colors"
+                className="btn hover:bg-primary-dark hover:border-primary-dark"
               >
                 Obtenir un devis
                 <span aria-hidden="true">→</span>
+              </Link>
+              <Link
+                href="/calendrier"
+                className="btn-outline text-white hover:bg-white hover:text-ink"
+              >
+                Voir le calendrier
               </Link>
             </div>
           </div>

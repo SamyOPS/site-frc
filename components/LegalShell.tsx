@@ -9,7 +9,7 @@ type Props = {
 export function LegalShell({ title, updated, children }: Props) {
   return (
     <>
-      <div className="bg-primary">
+      <div className="bg-ink">
         <HeroNav />
       </div>
       <section className="container-x py-20 md:py-28 max-w-3xl">

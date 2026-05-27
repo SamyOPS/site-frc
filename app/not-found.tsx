@@ -4,7 +4,7 @@ import { HeroNav } from "@/components/HeroNav";
 export default function NotFound() {
   return (
     <>
-      <div className="bg-primary">
+      <div className="bg-ink">
         <HeroNav />
       </div>
       <section className="container-x py-24 md:py-32 text-center">

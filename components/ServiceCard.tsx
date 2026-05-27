@@ -39,7 +39,7 @@ export function ServiceCard({ item }: { item: CacesFormation }) {
         <h3 className="headline text-xl text-ink">
           {item.title}
         </h3>
-        <p className="mt-1 text-xs uppercase tracking-[0.2em] text-primary font-medium">
+        <p className="mt-1 text-xs uppercase tracking-[0.06em] leading-snug text-primary font-medium">
           CACES® {item.code} · {item.subtitle}
         </p>
         <p className="mt-4 text-sm text-gray leading-relaxed normal-case">

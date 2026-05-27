@@ -15,6 +15,7 @@ import {
   company,
   faq,
   formations,
+  stats,
   testimonials,
 } from "@/lib/data";
 import aboutImage from "@/public/frc/3w6a0433_52035903199_o.webp";
@@ -54,6 +55,28 @@ export default async function Home() {
   return (
     <>
       <HeroSlider />
+
+      {/* Chiffres clés */}
+      <section className="bg-ink text-white">
+        <div className="container-x py-10 md:py-12 grid grid-cols-2 md:grid-cols-4 gap-y-8">
+          {stats.map((stat, i) => (
+            <Reveal
+              key={stat.label}
+              delay={i * 80}
+              className={`px-4 md:px-6 ${
+                i > 0 ? "md:border-l md:border-white/10" : ""
+              }`}
+            >
+              <p className="headline text-3xl md:text-5xl text-primary">
+                {stat.value}
+              </p>
+              <p className="mt-2 text-[10px] md:text-xs uppercase tracking-[0.22em] text-white/65">
+                {stat.label}
+              </p>
+            </Reveal>
+          ))}
+        </div>
+      </section>
 
       {/* À propos */}
       <section className="container-x py-24 md:py-32">

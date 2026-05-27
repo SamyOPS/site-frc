@@ -9,7 +9,7 @@ type Props = {
 export function PageHero({ eyebrow, title, description }: Props) {
   return (
     <>
-      <div className="bg-primary">
+      <div className="bg-ink">
         <HeroNav />
       </div>
 

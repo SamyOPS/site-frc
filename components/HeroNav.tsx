@@ -81,8 +81,16 @@ function buildLinks(priceMap: Record<string, number>): NavLinkItem[] {
     .filter((f) => f.category !== "caces")
     .map((f, i) => formationToDropdownItem(f, i, priceMap));
   return [
-    { label: "Formations", dropdownItems: cacesItems },
-    { label: "Autres formations", labelMobile: "Autres", dropdownItems: autresItems },
+    {
+      label: "Formations CACES",
+      labelMobile: "CACES",
+      dropdownItems: cacesItems,
+    },
+    {
+      label: "Formations santé, sécurité & prévention",
+      labelMobile: "Santé & prévention",
+      dropdownItems: autresItems,
+    },
     { label: "À propos", dropdownItems: aboutItems },
     { label: "Contact", href: "/contact" },
   ];
