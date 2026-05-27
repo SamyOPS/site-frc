@@ -3,9 +3,10 @@
 import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { formations, type Formation } from "@/lib/data";
+import { createClient } from "@/lib/supabase/client";
 
 import img1 from "@/public/frc/2023-12-13.webp";
 import img2 from "@/public/frc/2024-07-18.webp";
@@ -38,27 +39,24 @@ type NavLinkItem = {
 
 const fallbackImages = [img1, img2, img3, img4, img5, img6, img7, img8, img9, img10];
 
-function formationToDropdownItem(f: Formation, idx: number): DropdownItem {
+function formationToDropdownItem(
+  f: Formation,
+  idx: number,
+  priceMap: Record<string, number>
+): DropdownItem {
   const isCaces = f.category === "caces";
+  const price = priceMap[f.slug] ?? f.priceFrom;
   return {
     primary: isCaces ? `CACES® ${f.code}` : f.title,
     description: isCaces ? f.description : undefined,
     secondary: !isCaces ? f.subtitle : undefined,
-    price: f.priceFrom ? `Dès ${f.priceFrom} €` : undefined,
+    price: price != null ? `Dès ${price} €` : undefined,
     image: f.image ?? fallbackImages[idx % fallbackImages.length],
     imageFit: isCaces ? "contain" : "cover",
     href: `/formations/${f.slug}`,
     category: f.category,
   };
 }
-
-const cacesItems: DropdownItem[] = formations
-  .filter((f) => f.category === "caces")
-  .map((f, i) => formationToDropdownItem(f, i));
-
-const autresItems: DropdownItem[] = formations
-  .filter((f) => f.category !== "caces")
-  .map((f, i) => formationToDropdownItem(f, i));
 
 const aboutItems: DropdownItem[] = [
   {
@@ -75,12 +73,20 @@ const aboutItems: DropdownItem[] = [
   },
 ];
 
-const links: NavLinkItem[] = [
-  { label: "Formations", dropdownItems: cacesItems },
-  { label: "Autres formations", labelMobile: "Autres", dropdownItems: autresItems },
-  { label: "À propos", dropdownItems: aboutItems },
-  { label: "Contact", href: "/contact" },
-];
+function buildLinks(priceMap: Record<string, number>): NavLinkItem[] {
+  const cacesItems = formations
+    .filter((f) => f.category === "caces")
+    .map((f, i) => formationToDropdownItem(f, i, priceMap));
+  const autresItems = formations
+    .filter((f) => f.category !== "caces")
+    .map((f, i) => formationToDropdownItem(f, i, priceMap));
+  return [
+    { label: "Formations", dropdownItems: cacesItems },
+    { label: "Autres formations", labelMobile: "Autres", dropdownItems: autresItems },
+    { label: "À propos", dropdownItems: aboutItems },
+    { label: "Contact", href: "/contact" },
+  ];
+}
 
 const linkClass =
   "relative inline-flex items-center gap-1.5 py-1 text-[10px] sm:text-[11px] lg:text-xs uppercase tracking-[0.16em] sm:tracking-[0.2em] font-medium transition-colors whitespace-nowrap";
@@ -358,7 +364,27 @@ function NavList() {
   const pathname = usePathname();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [shownMenu, setShownMenu] = useState<string | null>(null);
+  const [priceMap, setPriceMap] = useState<Record<string, number>>({});
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    createClient()
+      .from("formation_prices")
+      .select("slug, price_from")
+      .then(({ data }) => {
+        if (active && data) {
+          setPriceMap(
+            Object.fromEntries(data.map((r) => [r.slug, r.price_from]))
+          );
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const links = useMemo(() => buildLinks(priceMap), [priceMap]);
 
   const openMenu = (key: string) => {
     if (closeTimer.current) {

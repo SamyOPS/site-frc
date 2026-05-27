@@ -3,6 +3,7 @@ import { Barlow_Condensed, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { Footer } from "@/components/Footer";
 import { BackToTop } from "@/components/BackToTop";
+import { SiteChrome } from "@/components/SiteChrome";
 
 const barlow = Barlow_Condensed({
   variable: "--font-barlow-condensed",
@@ -62,8 +63,10 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-white text-dark">
         <main className="flex-1">{children}</main>
-        <Footer />
-        <BackToTop />
+        <SiteChrome>
+          <Footer />
+          <BackToTop />
+        </SiteChrome>
       </body>
     </html>
   );

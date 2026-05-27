@@ -8,6 +8,7 @@ import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
 import { FaqAccordion } from "@/components/FaqAccordion";
 import { Decor } from "@/components/Decor";
 import { Reveal } from "@/components/Reveal";
+import { getPriceMap } from "@/lib/queries";
 import { ContactForm } from "@/components/ContactForm";
 import {
   cacesFormations,
@@ -33,6 +34,9 @@ export const metadata = {
     "Organisme de formation certifié Qualiopi, FRC Technique propose 14 formations CACES® (R489, R486, R482) et de prévention des risques, finançables via CPF, OPCO et France Travail.",
 };
 
+// Régénération périodique + revalidation à la demande après édition admin
+export const revalidate = 300;
+
 const formationBenefits = [
   "Devis personnalisé sous 24h",
   "Montage du dossier de financement",
@@ -40,7 +44,13 @@ const formationBenefits = [
   "Plus de 98% de taux de réussite",
 ];
 
-export default function Home() {
+export default async function Home() {
+  const priceMap = await getPriceMap();
+  const cacesWithPrices = cacesFormations.map((f) => ({
+    ...f,
+    priceFrom: priceMap[f.slug] ?? f.priceFrom,
+  }));
+
   return (
     <>
       <HeroSlider />
@@ -131,7 +141,7 @@ export default function Home() {
           </Reveal>
           <Reveal delay={100}>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {cacesFormations.map((item) => (
+              {cacesWithPrices.map((item) => (
                 <ServiceCard key={item.code} item={item} />
               ))}
             </div>

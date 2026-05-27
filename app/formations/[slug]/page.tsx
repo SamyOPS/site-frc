@@ -7,6 +7,9 @@ import { HeroNav } from "@/components/HeroNav";
 import { Reveal } from "@/components/Reveal";
 import { SectionHeader } from "@/components/SectionHeader";
 import { formations, processSteps } from "@/lib/data";
+import { getPriceMap } from "@/lib/queries";
+
+export const revalidate = 300;
 
 type Params = Promise<{ slug: string }>;
 
@@ -40,6 +43,9 @@ export default async function FormationPage({ params }: { params: Params }) {
   const { slug } = await params;
   const formation = formations.find((f) => f.slug === slug);
   if (!formation) notFound();
+
+  const priceMap = await getPriceMap();
+  const priceFrom = priceMap[formation.slug] ?? formation.priceFrom;
 
   return (
     <>
@@ -171,14 +177,12 @@ export default async function FormationPage({ params }: { params: Params }) {
                   </dd>
                 </div>
               )}
-              {formation.priceFrom && (
+              {priceFrom != null && (
                 <div className="flex justify-between items-end bg-primary text-white px-5 py-5">
                   <dt className="text-[11px] uppercase tracking-[0.2em]">
                     À partir de
                   </dt>
-                  <dd className="headline text-3xl">
-                    {formation.priceFrom} €
-                  </dd>
+                  <dd className="headline text-3xl">{priceFrom} €</dd>
                 </div>
               )}
             </dl>
