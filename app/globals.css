@@ -1,26 +1,164 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-primary: #16a34a;
+  --color-primary-dark: #15803d;
+  --color-primary-soft: #dcfce7;
+  --color-dark: #0f1620;
+  --color-dark-2: #0a0a0a;
+  --color-ink: #050608;
+  --color-light: #f4f5f7;
+  --color-gray: #8d9297;
+  --color-rule: #e5e7eb;
+
+  --font-display: var(--font-barlow-condensed);
+  --font-sans: var(--font-dm-sans);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    font-family: var(--font-dm-sans), system-ui, sans-serif;
+    color: var(--color-dark);
+    background-color: #fff;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-barlow-condensed), system-ui, sans-serif;
+    font-weight: 800;
+    line-height: 1.02;
+    letter-spacing: -0.012em;
+  }
+  ::selection {
+    background-color: var(--color-primary);
+    color: #fff;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@utility eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-family: var(--font-dm-sans), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--color-primary);
+}
+
+@utility container-x {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+  max-width: 1280px;
+  @media (min-width: 768px) {
+    padding-inline: 2rem;
+  }
+}
+
+@utility btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  padding: 1rem 1.85rem;
+  background-color: var(--color-primary);
+  color: #fff;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  border: 1px solid var(--color-primary);
+  transition: background-color 200ms, color 200ms, border-color 200ms,
+    transform 120ms ease;
+  cursor: pointer;
+  white-space: nowrap;
+  &:active {
+    transform: scale(0.97);
+  }
+}
+@utility btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  padding: 1rem 1.85rem;
+  background-color: transparent;
+  color: currentColor;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  border: 1.5px solid currentColor;
+  transition: background-color 200ms, color 200ms, transform 120ms ease;
+  cursor: pointer;
+  white-space: nowrap;
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+@utility headline {
+  font-family: var(--font-barlow-condensed), system-ui, sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.015em;
+  line-height: 0.97;
+}
+
+@utility tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.7rem;
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+@keyframes marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, -50%, 0);
+  }
+}
+
+@utility grid-bg {
+  background-image: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.06) 1px,
+      transparent 1px
+    ),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+/* Scroll-reveal animations (désactivées si l'utilisateur préfère moins d'animations) */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+  }
+  .reveal[data-visible="true"] {
+    opacity: 1;
+    transform: none;
+  }
 }

@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir c:\\\\Users\\\\azeez\\\\Desktop\\\\site-frc)",
+      "Bash(npm run *)",
+      "Bash(tasklist)",
+      "Bash(findstr /i \"node next\")",
+      "Bash(cd c:/Users/azeez/Desktop/site-frc/public && mv \"QUALIOPI -frc technique.pdf\" \"certificat-qualiopi.pdf\" && ls *.pdf)",
+      "Bash(mv \"travail en hauteur.png\" \"travail-en-hauteur.png\")",
+      "Bash(mv \"harnais antichute.png\" \"port-du-harnais.png\")",
+      "Bash(mv \"sécurité incendie.png\" \"securite-incendie.png\")",
+      "Bash(mv \"habilitation éléectrique.png\" \"habilitations-electriques.png\")",
+      "Bash(mv \"AIPR.png\" \"aipr.png\")"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\azeez\\Desktop\\site-frc\\public"
+    ]
+  }
+}
