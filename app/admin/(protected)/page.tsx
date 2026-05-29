@@ -10,11 +10,12 @@ export type PriceRow = { slug: string; price_from: number };
 export type SessionRow = {
   id: string;
   formation_slug: string;
-  starts_on: string;
-  ends_on: string | null;
+  starts_at: string;
+  ends_at: string | null;
   location: string | null;
   seats_total: number | null;
   status: string;
+  categories: string[] | null;
 };
 export type DocumentRow = {
   id: string;
@@ -36,9 +37,9 @@ export default async function AdminDashboard() {
       supabase
         .from("sessions")
         .select(
-          "id, formation_slug, starts_on, ends_on, location, seats_total, status"
+          "id, formation_slug, starts_at, ends_at, location, seats_total, status, categories"
         )
-        .order("starts_on", { ascending: true }),
+        .order("starts_at", { ascending: true }),
       supabase
         .from("documents")
         .select(
@@ -51,6 +52,7 @@ export default async function AdminDashboard() {
     slug: f.slug,
     title: f.code ? `CACES® ${f.code} — ${f.title}` : f.title,
     fallbackPrice: f.priceFrom ?? null,
+    categories: f.categoriesDetail ?? null,
   }));
 
   return (
@@ -72,7 +74,11 @@ export default async function AdminDashboard() {
       />
 
       <SessionsManager
-        formations={formationList.map(({ slug, title }) => ({ slug, title }))}
+        formations={formationList.map(({ slug, title, categories }) => ({
+          slug,
+          title,
+          categories,
+        }))}
         sessions={(sessions ?? []) as SessionRow[]}
       />
 

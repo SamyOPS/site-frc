@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { OiseMap } from "@/components/OiseMap";
 import { PageHero } from "@/components/PageHero";
 import { SectionHeader } from "@/components/SectionHeader";
 import { Reveal } from "@/components/Reveal";
@@ -104,6 +105,72 @@ export default function QuiSommesNousPage() {
             ))}
           </div>
         </Reveal>
+      </section>
+
+      <section className="container-x pb-20 md:pb-28">
+        <Reveal>
+          <SectionHeader
+            eyebrow="Notre implantation"
+            title="À Montataire, au cœur de l'Oise"
+            description="Nos locaux et nos plateaux techniques sont basés dans le sud du département. Nous intervenons aussi en intra-entreprise partout en France."
+          />
+        </Reveal>
+
+        <div className="mt-10 grid lg:grid-cols-[1.4fr_1fr] gap-8 lg:gap-12 items-stretch">
+          <Reveal>
+            <div className="border border-rule bg-white p-4 md:p-6 h-full">
+              <OiseMap />
+            </div>
+          </Reveal>
+
+          <Reveal delay={120}>
+            <div className="bg-light border border-rule h-full p-7 md:p-8 flex flex-col">
+              <div className="flex items-center gap-3 mb-5">
+                <span className="block w-8 h-px bg-primary" />
+                <span className="eyebrow">Coordonnées</span>
+              </div>
+
+              <dl className="space-y-5 text-sm">
+                <div>
+                  <dt className="text-[10px] uppercase tracking-[0.2em] text-gray">
+                    Adresse
+                  </dt>
+                  <dd className="mt-1.5 text-ink font-medium normal-case">
+                    {company.address}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-[10px] uppercase tracking-[0.2em] text-gray">
+                    Email
+                  </dt>
+                  <dd className="mt-1.5">
+                    <a
+                      href={`mailto:${company.email}`}
+                      className="text-ink font-medium hover:text-primary transition-colors normal-case"
+                    >
+                      {company.email}
+                    </a>
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-[10px] uppercase tracking-[0.2em] text-gray">
+                    Horaires
+                  </dt>
+                  <dd className="mt-1.5 text-ink font-medium normal-case">
+                    {company.hours}
+                  </dd>
+                </div>
+              </dl>
+
+              <div className="mt-auto pt-6 border-t border-rule">
+                <p className="text-xs text-gray normal-case leading-relaxed">
+                  Sessions inter-entreprises dans nos locaux et formations
+                  intra sur site à la demande.
+                </p>
+              </div>
+            </div>
+          </Reveal>
+        </div>
       </section>
 
       <section className="container-x pb-20 md:pb-28">

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { CartButton } from "@/components/CartButton";
 import { formations, type Formation } from "@/lib/data";
 import { createClient } from "@/lib/supabase/client";
 
@@ -35,6 +36,7 @@ type NavLinkItem = {
   labelMobile?: string;
   href?: string;
   dropdownItems?: DropdownItem[];
+  compact?: boolean;
 };
 
 const fallbackImages = [img1, img2, img3, img4, img5, img6, img7, img8, img9, img10];
@@ -67,7 +69,7 @@ const aboutItems: DropdownItem[] = [
   },
   {
     primary: "Calendrier de formations",
-    secondary: "Bientôt disponible",
+    secondary: "Prochaines sessions",
     image: img5,
     href: "/calendrier",
   },
@@ -91,7 +93,7 @@ function buildLinks(priceMap: Record<string, number>): NavLinkItem[] {
       labelMobile: "Santé & prévention",
       dropdownItems: autresItems,
     },
-    { label: "À propos", dropdownItems: aboutItems },
+    { label: "À propos", dropdownItems: aboutItems, compact: true },
     { label: "Contact", href: "/contact" },
   ];
 }
@@ -283,6 +285,86 @@ function MobileItemRow({
   );
 }
 
+function CompactItemRow({
+  item,
+  onNavigate,
+}: {
+  item: DropdownItem;
+  onNavigate: () => void;
+}) {
+  const content = (
+    <>
+      <div className="text-sm font-medium uppercase tracking-[0.14em] text-ink leading-tight">
+        {item.primary}
+      </div>
+      {item.secondary && (
+        <div className="mt-1 text-[11px] tracking-[0.14em] uppercase text-gray">
+          {item.secondary}
+        </div>
+      )}
+    </>
+  );
+  return (
+    <li className="border-b border-rule last:border-b-0">
+      {item.href ? (
+        <Link
+          href={item.href}
+          onClick={onNavigate}
+          className="block px-5 py-4 hover:bg-light transition-colors group/item"
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div>{content}</div>
+            <span
+              aria-hidden="true"
+              className="text-ink/40 group-hover/item:text-primary transition-colors"
+            >
+              →
+            </span>
+          </div>
+        </Link>
+      ) : (
+        <div className="px-5 py-4">{content}</div>
+      )}
+    </li>
+  );
+}
+
+function CompactPanel({
+  items,
+  open,
+  onMouseEnter,
+  onMouseLeave,
+  onNavigate,
+}: {
+  items: DropdownItem[];
+  open: boolean;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+  onNavigate: () => void;
+}) {
+  return (
+    <div
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      className={`hidden md:block absolute z-40 top-full mt-3 right-0 w-72 bg-white text-ink shadow-[0_20px_60px_-15px_rgba(0,0,0,0.35)] border border-rule transition-all duration-200 ${
+        open
+          ? "opacity-100 visible translate-y-0"
+          : "opacity-0 invisible -translate-y-2 pointer-events-none"
+      }`}
+    >
+      <ul>
+        {items.map((item, i) => (
+          <CompactItemRow
+            key={`${i}-${item.primary}`}
+            item={item}
+            onNavigate={onNavigate}
+          />
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function MegaPanel({
   link,
   open,
@@ -444,7 +526,10 @@ function NavList({ variant }: { variant: "dark" | "light" }) {
           if (link.dropdownItems) {
             const isActive = activeMenu === link.label;
             return (
-              <li key={link.label}>
+              <li
+                key={link.label}
+                className={link.compact ? "relative" : undefined}
+              >
                 <button
                   type="button"
                   aria-haspopup="true"
@@ -464,6 +549,15 @@ function NavList({ variant }: { variant: "dark" | "light" }) {
                   <span className="hidden sm:inline">{link.label}</span>
                   <Chevron rotated={isActive} />
                 </button>
+                {link.compact && (
+                  <CompactPanel
+                    items={link.dropdownItems}
+                    open={isActive}
+                    onMouseEnter={cancelClose}
+                    onMouseLeave={scheduleClose}
+                    onNavigate={closeAll}
+                  />
+                )}
               </li>
             );
           }
@@ -495,8 +589,8 @@ function NavList({ variant }: { variant: "dark" | "light" }) {
       <MobileAccordion link={activeMenu ? shownLink : undefined} onNavigate={closeAll} />
 
       <MegaPanel
-        link={shownLink}
-        open={!!activeMenu}
+        link={shownLink && !shownLink.compact ? shownLink : undefined}
+        open={!!activeMenu && !shownLink?.compact}
         onMouseEnter={cancelClose}
         onMouseLeave={scheduleClose}
         onNavigate={closeAll}
@@ -533,9 +627,10 @@ export function HeroNav({
 
         <nav
           aria-label="Navigation principale"
-          className="w-full md:w-auto flex flex-col items-center md:flex-row md:items-stretch"
+          className="w-full md:w-auto flex flex-col items-center md:flex-row md:items-stretch md:gap-3"
         >
           <NavList variant={variant} />
+          <CartButton variant={variant} />
         </nav>
       </div>
     </div>

@@ -3,7 +3,9 @@ import { Barlow_Condensed, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { Footer } from "@/components/Footer";
 import { BackToTop } from "@/components/BackToTop";
+import { CartSidebar } from "@/components/CartSidebar";
 import { SiteChrome } from "@/components/SiteChrome";
+import { CartProvider } from "@/lib/cart";
 
 const barlow = Barlow_Condensed({
   variable: "--font-barlow-condensed",
@@ -62,11 +64,14 @@ export default function RootLayout({
       className={`${barlow.variable} ${dmSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-white text-dark">
-        <main className="flex-1">{children}</main>
-        <SiteChrome>
-          <Footer />
-          <BackToTop />
-        </SiteChrome>
+        <CartProvider>
+          <main className="flex-1">{children}</main>
+          <SiteChrome>
+            <Footer />
+            <BackToTop />
+          </SiteChrome>
+          <CartSidebar />
+        </CartProvider>
       </body>
     </html>
   );

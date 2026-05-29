@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AddToCartButton } from "@/components/AddToCartButton";
 import { FactCard } from "@/components/FactCard";
 import { HeroNav } from "@/components/HeroNav";
 import { Reveal } from "@/components/Reveal";
@@ -111,20 +112,17 @@ export default async function FormationPage({ params }: { params: Params }) {
               </div>
             )}
 
-            <div className="mt-10 flex flex-col sm:flex-row gap-3">
-              <Link
-                href="/contact"
-                className="btn hover:bg-primary-dark hover:border-primary-dark"
-              >
-                Demander un devis
-                <span aria-hidden="true">→</span>
-              </Link>
-              <Link
-                href="/"
-                className="btn-outline text-ink hover:bg-ink hover:text-white"
-              >
-                Retour à l&apos;accueil
-              </Link>
+            <div className="mt-10">
+              <AddToCartButton
+                slug={formation.slug}
+                title={
+                  formation.code
+                    ? `CACES® ${formation.code} — ${formation.title}`
+                    : formation.title
+                }
+                priceFrom={priceFrom ?? null}
+                categoriesDetail={formation.categoriesDetail}
+              />
             </div>
           </Reveal>
 

@@ -1,15 +1,19 @@
+import Image from "next/image";
 import type { ProcessStep } from "@/lib/data";
 
 export function FactCard({ step }: { step: ProcessStep }) {
   return (
     <article className="relative aspect-[4/5] overflow-hidden group bg-ink border border-white/10">
-      <div
-        className="absolute inset-0 grid-bg opacity-50"
-        aria-hidden="true"
+      <Image
+        src={step.image}
+        alt=""
+        fill
+        sizes="(min-width: 1024px) 22vw, (min-width: 640px) 45vw, 90vw"
+        className="object-cover opacity-60 transition-transform duration-700 group-hover:scale-105"
       />
       <span
         aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-b from-transparent via-ink/10 to-ink/80"
+        className="absolute inset-0 bg-gradient-to-b from-ink/40 via-ink/30 to-ink/90"
       />
       <span
         aria-hidden="true"

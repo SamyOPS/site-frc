@@ -13,6 +13,10 @@ import imgEchafaudageFixe from "@/public/autre_formation/echafaudage-fixe.png";
 import imgAmiante from "@/public/autre_formation/amiante-ss4.png";
 import imgPlomb from "@/public/autre_formation/plomb.png";
 import imgSecufer from "@/public/autre_formation/secufer.png";
+import processEvaluation from "@/public/processus/evaluation.png";
+import processInscription from "@/public/processus/inscirption.png";
+import processFormation from "@/public/processus/formation.png";
+import processCertification from "@/public/processus/certification.png";
 
 export type FormationCategory = "caces" | "sante" | "prevention";
 
@@ -478,6 +482,7 @@ export type ProcessStep = {
   number: string;
   title: string;
   description: string;
+  image: StaticImageData;
 };
 
 export const processSteps: ProcessStep[] = [
@@ -486,24 +491,28 @@ export const processSteps: ProcessStep[] = [
     title: "Évaluation",
     description:
       "Analyse de vos besoins, audit des compétences et choix de la formation adaptée.",
+    image: processEvaluation,
   },
   {
     number: "02",
     title: "Inscription",
     description:
       "Devis personnalisé, montage du dossier de financement (CPF, OPCO, France Travail).",
+    image: processInscription,
   },
   {
     number: "03",
     title: "Formation",
     description:
       "Théorie et pratique encadrées par nos formateurs qualifiés et expérimentés.",
+    image: processFormation,
   },
   {
     number: "04",
     title: "Certification",
     description:
       "Passage des épreuves CACES®, remise du certificat et suivi post-formation.",
+    image: processCertification,
   },
 ];
 
