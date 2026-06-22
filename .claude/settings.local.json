@@ -11,7 +11,12 @@
       "Bash(mv \"sécurité incendie.png\" \"securite-incendie.png\")",
       "Bash(mv \"habilitation éléectrique.png\" \"habilitations-electriques.png\")",
       "Bash(mv \"AIPR.png\" \"aipr.png\")",
-      "PowerShell(npm run build)"
+      "PowerShell(npm run build)",
+      "PowerShell(npm install nodemailer)",
+      "PowerShell(npm install -D @types/nodemailer)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(netstat -ano)"
     ],
     "additionalDirectories": [
       "c:\\Users\\azeez\\Desktop\\site-frc\\public"

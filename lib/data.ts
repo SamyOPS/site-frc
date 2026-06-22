@@ -519,6 +519,8 @@ export const processSteps: ProcessStep[] = [
 export type Testimonial = {
   name: string;
   quote: string;
+  /** Note de 1 à 5 étoiles (absente pour les témoignages historiques). */
+  rating?: number;
 };
 
 export const testimonials: Testimonial[] = [
@@ -586,7 +588,7 @@ export const faq: FaqItem[] = [
 
 export const company = {
   name: "FRC Technique",
-  email: "contact@frc-technique.fr",
+  email: "formation@frc-technique.com",
   address: "Montataire (60), France",
   hours: "Lun-Ven 08h-18h",
   siren: "880 704 754",

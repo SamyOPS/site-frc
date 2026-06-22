@@ -261,3 +261,39 @@ export async function deleteSession(id: string): Promise<ActionResult> {
   revalidatePublic();
   return { ok: true };
 }
+
+/** Valide ou rejette un avis client (statut pending → approved/rejected). */
+export async function setReviewStatus(
+  id: string,
+  status: "pending" | "approved" | "rejected"
+): Promise<ActionResult> {
+  const { supabase, ok } = await requireAdmin();
+  if (!ok) return { ok: false, error: "Non autorisé." };
+
+  if (!["pending", "approved", "rejected"].includes(status)) {
+    return { ok: false, error: "Statut invalide." };
+  }
+
+  const { error } = await supabase
+    .from("reviews")
+    .update({ status })
+    .eq("id", id);
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePublic();
+  return { ok: true };
+}
+
+/** Supprime définitivement un avis. */
+export async function deleteReview(id: string): Promise<ActionResult> {
+  const { supabase, ok } = await requireAdmin();
+  if (!ok) return { ok: false, error: "Non autorisé." };
+
+  const { error } = await supabase.from("reviews").delete().eq("id", id);
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePublic();
+  return { ok: true };
+}

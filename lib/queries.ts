@@ -1,4 +1,5 @@
 import { supabasePublic } from "@/lib/supabase/public";
+import type { Testimonial } from "@/lib/data";
 
 export type PublicSession = {
   id: string;
@@ -38,6 +39,21 @@ export async function getUpcomingSessions(): Promise<PublicSession[]> {
       .order("starts_at", { ascending: true });
     if (error || !data) return [];
     return data as PublicSession[];
+  } catch {
+    return [];
+  }
+}
+
+/** Avis clients approuvés (les plus récents d'abord). */
+export async function getApprovedReviews(): Promise<Testimonial[]> {
+  try {
+    const { data, error } = await supabasePublic
+      .from("reviews")
+      .select("name, quote, rating")
+      .eq("status", "approved")
+      .order("created_at", { ascending: false });
+    if (error || !data) return [];
+    return data as Testimonial[];
   } catch {
     return [];
   }

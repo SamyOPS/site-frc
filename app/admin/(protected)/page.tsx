@@ -3,6 +3,7 @@ import { formations } from "@/lib/data";
 import { PriceEditor } from "./PriceEditor";
 import { SessionsManager } from "./SessionsManager";
 import { DocumentsManager } from "./DocumentsManager";
+import { ReviewsManager } from "./ReviewsManager";
 
 export const metadata = { title: "Administration — FRC Technique" };
 
@@ -27,26 +28,49 @@ export type DocumentRow = {
   formation_slug: string | null;
   category: string;
 };
+export type ReviewRow = {
+  id: string;
+  name: string;
+  quote: string;
+  rating: number;
+  status: "pending" | "approved" | "rejected";
+  created_at: string;
+};
 
 export default async function AdminDashboard() {
   const supabase = await createClient();
 
-  const [{ data: prices }, { data: sessions }, { data: documents }] =
-    await Promise.all([
-      supabase.from("formation_prices").select("slug, price_from"),
-      supabase
-        .from("sessions")
-        .select(
-          "id, formation_slug, starts_at, ends_at, location, seats_total, status, categories"
-        )
-        .order("starts_at", { ascending: true }),
-      supabase
-        .from("documents")
-        .select(
-          "id, label, file_path, file_name, mime_type, size_bytes, formation_slug, category"
-        )
-        .order("created_at", { ascending: false }),
-    ]);
+  const [
+    { data: prices },
+    { data: sessions },
+    { data: documents },
+    { data: reviews },
+  ] = await Promise.all([
+    supabase.from("formation_prices").select("slug, price_from"),
+    supabase
+      .from("sessions")
+      .select(
+        "id, formation_slug, starts_at, ends_at, location, seats_total, status, categories"
+      )
+      .order("starts_at", { ascending: true }),
+    supabase
+      .from("documents")
+      .select(
+        "id, label, file_path, file_name, mime_type, size_bytes, formation_slug, category"
+      )
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("reviews")
+      .select("id, name, quote, rating, status, created_at")
+      .order("created_at", { ascending: false }),
+  ]);
+
+  // Avis en attente d'abord, puis le reste par date décroissante.
+  const reviewList = ((reviews ?? []) as ReviewRow[])
+    .slice()
+    .sort((a, b) =>
+      a.status === b.status ? 0 : a.status === "pending" ? -1 : b.status === "pending" ? 1 : 0
+    );
 
   const formationList = formations.map((f) => ({
     slug: f.slug,
@@ -86,6 +110,8 @@ export default async function AdminDashboard() {
         formations={formationList.map(({ slug, title }) => ({ slug, title }))}
         documents={(documents ?? []) as DocumentRow[]}
       />
+
+      <ReviewsManager reviews={reviewList} />
     </div>
   );
 }

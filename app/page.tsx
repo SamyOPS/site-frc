@@ -8,8 +8,9 @@ import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
 import { FaqAccordion } from "@/components/FaqAccordion";
 import { Decor } from "@/components/Decor";
 import { Reveal } from "@/components/Reveal";
-import { getPriceMap } from "@/lib/queries";
+import { getPriceMap, getApprovedReviews } from "@/lib/queries";
 import { ContactForm } from "@/components/ContactForm";
+import { ReviewForm } from "@/components/ReviewForm";
 import {
   cacesFormations,
   company,
@@ -46,11 +47,16 @@ const formationBenefits = [
 ];
 
 export default async function Home() {
-  const priceMap = await getPriceMap();
+  const [priceMap, approvedReviews] = await Promise.all([
+    getPriceMap(),
+    getApprovedReviews(),
+  ]);
   const cacesWithPrices = cacesFormations.map((f) => ({
     ...f,
     priceFrom: priceMap[f.slug] ?? f.priceFrom,
   }));
+  // Avis approuvés (récents d'abord) suivis des témoignages historiques.
+  const allTestimonials = [...approvedReviews, ...testimonials];
 
   return (
     <>
@@ -253,9 +259,26 @@ export default async function Home() {
               title="Ils ont choisi FRC Technique"
             />
           </Reveal>
-          <Reveal delay={100}>
-            <TestimonialsCarousel items={testimonials} />
-          </Reveal>
+          <div className="mt-14 grid items-start gap-10 lg:grid-cols-2 lg:gap-12">
+            <Reveal delay={100}>
+              <TestimonialsCarousel items={allTestimonials} />
+            </Reveal>
+
+            <Reveal delay={150}>
+              <div className="bg-white border border-rule p-8 md:p-10">
+                <p className="eyebrow">Votre avis</p>
+                <h3 className="mt-2 headline text-2xl text-ink">
+                  Partagez votre expérience
+                </h3>
+                <p className="mt-2 mb-8 text-sm text-gray normal-case">
+                  Vous avez suivi une formation avec nous ? Laissez-nous un
+                  avis. Il sera publié sur le site après validation par notre
+                  équipe.
+                </p>
+                <ReviewForm />
+              </div>
+            </Reveal>
+          </div>
         </div>
       </section>
 
