@@ -472,10 +472,23 @@ export const preventionRisquesFormations = formations
 
 export type Stat = { value: string; label: string };
 export const stats: Stat[] = [
-  { value: "500+", label: "Stagiaires formés" },
-  { value: "98%", label: "Taux de réussite" },
-  { value: "94%", label: "Satisfaction" },
+  { value: "99,2%", label: "Taux de réussite" },
+  { value: "510", label: "Tests réalisés" },
+  { value: "506", label: "CACES délivrés" },
   { value: "14", label: "Formations" },
+];
+
+// Détail des résultats par catégorie de CACES (données réelles FRC Technique).
+export type CacesStat = {
+  code: string;
+  successRate: string;
+  failRate: string;
+  delivered: number;
+};
+export const cacesStats: CacesStat[] = [
+  { code: "R489", successRate: "99,04 %", failRate: "0,96 %", delivered: 412 },
+  { code: "R486", successRate: "100 %", failRate: "0 %", delivered: 36 },
+  { code: "R482", successRate: "100 %", failRate: "0 %", delivered: 58 },
 ];
 
 export type ProcessStep = {

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import {
   createSession,
   deleteSession,
+  updateSession,
   updateSessionSeats,
   updateSessionStatus,
 } from "./actions";
@@ -59,7 +60,11 @@ export function SessionsManager({
   const [selectedSlugs, setSelectedSlugs] = useState<Set<string>>(new Set());
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const titleBySlug = new Map(formations.map((f) => [f.slug, f.title]));
+  const categoriesBySlug = new Map(
+    formations.map((f) => [f.slug, f.categories])
+  );
 
   useEffect(() => {
     if (!dropdownOpen) return;
@@ -112,6 +117,18 @@ export function SessionsManager({
   function onDelete(id: string) {
     startTransition(async () => {
       await deleteSession(id);
+    });
+  }
+
+  function onUpdate(
+    id: string,
+    data: { startDate: string; endDate: string; categories: string[] | null }
+  ) {
+    setError(null);
+    startTransition(async () => {
+      const res = await updateSession(id, data);
+      if (res.ok) setEditingId(null);
+      else setError(res.error ?? "Erreur");
     });
   }
 
@@ -241,11 +258,11 @@ export function SessionsManager({
 
         <label className="flex flex-col gap-1.5">
           <span className="text-[10px] uppercase tracking-[0.2em] text-gray">
-            Début (date &amp; heure)
+            Date de début
           </span>
           <input
-            type="datetime-local"
-            name="starts_at"
+            type="date"
+            name="start_date"
             required
             className={inputClass}
           />
@@ -253,14 +270,19 @@ export function SessionsManager({
 
         <label className="flex flex-col gap-1.5">
           <span className="text-[10px] uppercase tracking-[0.2em] text-gray">
-            Fin (date &amp; heure)
+            Date de fin (optionnel)
           </span>
           <input
-            type="datetime-local"
-            name="ends_at"
+            type="date"
+            name="end_date"
             className={inputClass}
           />
         </label>
+
+        <p className="text-[11px] text-gray normal-case lg:col-span-3">
+          Les sessions se déroulent de 9h00 à 17h00. Renseignez une date de fin
+          uniquement pour une formation qui s&apos;étale sur plusieurs jours.
+        </p>
 
         <label className="flex flex-col gap-1.5">
           <span className="text-[10px] uppercase tracking-[0.2em] text-gray">
@@ -275,17 +297,6 @@ export function SessionsManager({
           />
         </label>
 
-        <label className="flex flex-col gap-1.5">
-          <span className="text-[10px] uppercase tracking-[0.2em] text-gray">
-            Lieu
-          </span>
-          <input
-            type="text"
-            name="location"
-            placeholder="Montataire (60)"
-            className={inputClass}
-          />
-        </label>
 
         <label className="flex flex-col gap-1.5">
           <span className="text-[10px] uppercase tracking-[0.2em] text-gray">
@@ -357,9 +368,9 @@ export function SessionsManager({
 
         {recurrence !== "none" && (
           <p className="text-[11px] text-gray normal-case lg:col-span-3">
-            Indiquez un nombre de séances <em>ou</em> une date de fin. Le jour
-            et l&apos;heure de début sont répétés (ex. lundi 9h00). Maximum 52
-            occurrences.
+            Indiquez un nombre de séances <em>ou</em> une date de fin de série.
+            Le jour de début est répété (ex. chaque lundi, de 9h00 à 17h00).
+            Maximum 52 occurrences.
           </p>
         )}
       </form>
@@ -373,55 +384,207 @@ export function SessionsManager({
         </p>
       ) : (
         <ul className="border-t border-rule">
-          {sessions.map((s) => (
-            <li
-              key={s.id}
-              className="flex flex-wrap items-center gap-3 py-3 border-b border-rule"
-            >
-              <span className="text-sm font-medium text-ink min-w-[200px]">
-                {formatDateTime(s.starts_at)}
-                {s.ends_at ? ` → ${formatDateTime(s.ends_at)}` : ""}
-              </span>
-              <span className="flex-1 text-sm text-gray min-w-[180px]">
-                {titleBySlug.get(s.formation_slug) ?? s.formation_slug}
-                {s.categories && s.categories.length > 0 && (
-                  <span className="ml-2 text-[10px] uppercase tracking-[0.16em] text-primary">
-                    Cat. {s.categories.join(" · ")}
-                  </span>
-                )}
-              </span>
-              <SeatsEditor
-                id={s.id}
-                value={s.seats_total}
-                onSave={onSeats}
-                disabled={pending}
-              />
-              <select
-                value={s.status}
-                onChange={(e) => onStatus(s.id, e.target.value)}
-                disabled={pending}
-                className="border border-rule bg-light px-2 py-1.5 text-xs text-ink outline-none"
-                aria-label="Statut de la session"
+          {sessions.map((s) =>
+            editingId === s.id ? (
+              <li key={s.id} className="py-4 border-b border-rule">
+                <SessionEditor
+                  session={s}
+                  title={titleBySlug.get(s.formation_slug) ?? s.formation_slug}
+                  availableCategories={
+                    categoriesBySlug.get(s.formation_slug) ?? null
+                  }
+                  disabled={pending}
+                  onCancel={() => setEditingId(null)}
+                  onSave={(data) => onUpdate(s.id, data)}
+                />
+              </li>
+            ) : (
+              <li
+                key={s.id}
+                className="flex flex-wrap items-center gap-3 py-3 border-b border-rule"
               >
-                {Object.entries(statusLabel).map(([v, label]) => (
-                  <option key={v} value={v}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                onClick={() => onDelete(s.id)}
-                disabled={pending}
-                className="text-[11px] uppercase tracking-[0.16em] border border-rule px-3 py-1.5 text-ink hover:bg-red-500 hover:text-white hover:border-red-500 transition-colors disabled:opacity-50"
-              >
-                Suppr.
-              </button>
-            </li>
-          ))}
+                <span className="text-sm font-medium text-ink min-w-[200px]">
+                  {formatDateTime(s.starts_at)}
+                  {s.ends_at ? ` → ${formatDateTime(s.ends_at)}` : ""}
+                </span>
+                <span className="flex-1 text-sm text-gray min-w-[180px]">
+                  {titleBySlug.get(s.formation_slug) ?? s.formation_slug}
+                  {s.categories && s.categories.length > 0 && (
+                    <span className="ml-2 text-[10px] uppercase tracking-[0.16em] text-primary">
+                      Cat. {s.categories.join(" · ")}
+                    </span>
+                  )}
+                </span>
+                <SeatsEditor
+                  id={s.id}
+                  value={s.seats_total}
+                  onSave={onSeats}
+                  disabled={pending}
+                />
+                <select
+                  value={s.status}
+                  onChange={(e) => onStatus(s.id, e.target.value)}
+                  disabled={pending}
+                  className="border border-rule bg-light px-2 py-1.5 text-xs text-ink outline-none"
+                  aria-label="Statut de la session"
+                >
+                  {Object.entries(statusLabel).map(([v, label]) => (
+                    <option key={v} value={v}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setEditingId(s.id)}
+                  disabled={pending}
+                  className="text-[11px] uppercase tracking-[0.16em] border border-rule px-3 py-1.5 text-ink hover:bg-ink hover:text-white hover:border-ink transition-colors disabled:opacity-50"
+                >
+                  Modifier
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onDelete(s.id)}
+                  disabled={pending}
+                  className="text-[11px] uppercase tracking-[0.16em] border border-rule px-3 py-1.5 text-ink hover:bg-red-500 hover:text-white hover:border-red-500 transition-colors disabled:opacity-50"
+                >
+                  Suppr.
+                </button>
+              </li>
+            )
+          )}
         </ul>
       )}
     </section>
+  );
+}
+
+function SessionEditor({
+  session,
+  title,
+  availableCategories,
+  disabled,
+  onCancel,
+  onSave,
+}: {
+  session: SessionRow;
+  title: string;
+  availableCategories: CategoryDetail[] | null;
+  disabled: boolean;
+  onCancel: () => void;
+  onSave: (data: {
+    startDate: string;
+    endDate: string;
+    categories: string[] | null;
+  }) => void;
+}) {
+  const startK = session.starts_at.slice(0, 10);
+  const endK = session.ends_at ? session.ends_at.slice(0, 10) : startK;
+  const [startDate, setStartDate] = useState(startK);
+  // Date de fin laissée vide si la session tient sur un seul jour.
+  const [endDate, setEndDate] = useState(endK !== startK ? endK : "");
+  const [cats, setCats] = useState<Set<string>>(
+    new Set(session.categories ?? [])
+  );
+
+  const editClass =
+    "border border-rule bg-light px-3 py-2.5 text-sm text-ink outline-none focus:border-ink";
+
+  function toggleCat(code: string) {
+    setCats((prev) => {
+      const next = new Set(prev);
+      if (next.has(code)) next.delete(code);
+      else next.add(code);
+      return next;
+    });
+  }
+
+  function save() {
+    const selected = availableCategories
+      ? availableCategories.filter((c) => cats.has(c.code)).map((c) => c.code)
+      : [];
+    onSave({
+      startDate,
+      endDate,
+      categories: selected.length > 0 ? selected : null,
+    });
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <p className="text-sm font-medium text-ink">{title}</p>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[10px] uppercase tracking-[0.2em] text-gray">
+            Date de début
+          </span>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className={editClass}
+          />
+        </label>
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[10px] uppercase tracking-[0.2em] text-gray">
+            Date de fin (optionnel)
+          </span>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className={editClass}
+          />
+        </label>
+      </div>
+
+      {availableCategories && availableCategories.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[10px] uppercase tracking-[0.2em] text-gray">
+            Catégories
+          </span>
+          <div className="flex flex-wrap gap-x-5 gap-y-2">
+            {availableCategories.map((c) => (
+              <label
+                key={c.code}
+                className="flex items-center gap-2 text-xs text-ink cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  checked={cats.has(c.code)}
+                  onChange={() => toggleCat(c.code)}
+                  className="accent-primary"
+                />
+                <span className="font-medium">{c.code}</span>
+                <span className="text-gray normal-case">— {c.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={save}
+          disabled={disabled}
+          className="btn hover:bg-primary-dark hover:border-primary-dark disabled:opacity-50"
+        >
+          Enregistrer
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={disabled}
+          className="text-[11px] uppercase tracking-[0.16em] border border-rule px-3 py-1.5 text-ink hover:bg-light transition-colors disabled:opacity-50"
+        >
+          Annuler
+        </button>
+        <span className="text-[11px] text-gray normal-case ml-1">
+          Horaires fixes&nbsp;: 9h00 – 17h00.
+        </span>
+      </div>
+    </div>
   );
 }
 

@@ -117,16 +117,16 @@ export async function createSession(formData: FormData): Promise<ActionResult> {
     .getAll("formation_slugs")
     .map((v) => String(v))
     .filter(Boolean);
-  const startsAt = String(formData.get("starts_at") ?? "");
-  const endsAt = String(formData.get("ends_at") ?? "");
-  const location = String(formData.get("location") ?? "").trim();
+  // Seules des dates sont saisies : toute session se déroule de 09h00 à 17h00.
+  const startDate = String(formData.get("start_date") ?? "");
+  const endDate = String(formData.get("end_date") ?? "");
   const seatsTotalRaw = String(formData.get("seats_total") ?? "");
   const status = String(formData.get("status") ?? "open");
   const recurrence = String(formData.get("recurrence") ?? "none");
   const recurrenceUntil = String(formData.get("recurrence_until") ?? "");
   const recurrenceCountRaw = String(formData.get("recurrence_count") ?? "");
 
-  if (formationSlugs.length === 0 || !startsAt) {
+  if (formationSlugs.length === 0 || !startDate) {
     return {
       ok: false,
       error: "Sélectionnez au moins une formation et une date de début.",
@@ -142,9 +142,14 @@ export async function createSession(formData: FormData): Promise<ActionResult> {
     if (cats.length > 0) categoriesBySlug.set(slug, cats);
   }
 
-  if (endsAt && endsAt <= startsAt) {
-    return { ok: false, error: "La fin doit être après le début." };
+  if (endDate && endDate < startDate) {
+    return { ok: false, error: "La date de fin doit être après la date de début." };
   }
+
+  // Horaires fixes : chaque jour de session se déroule de 09h00 à 17h00.
+  // Le dernier jour (date de fin, ou date de début si session d'un jour) finit à 17h.
+  const normStartsAt = `${startDate}T09:00:00`;
+  const normEndsAt = `${endDate || startDate}T17:00:00`;
 
   let recurrenceCount = recurrenceCountRaw ? Number(recurrenceCountRaw) : 0;
   if (recurrence !== "none") {
@@ -154,7 +159,7 @@ export async function createSession(formData: FormData): Promise<ActionResult> {
         error: "Indiquez une date de fin de série ou un nombre de séances.",
       };
     }
-    if (recurrenceUntil && recurrenceUntil <= startsAt.slice(0, 10)) {
+    if (recurrenceUntil && recurrenceUntil <= startDate) {
       return {
         ok: false,
         error: "La fin de série doit être après la date de début.",
@@ -168,19 +173,21 @@ export async function createSession(formData: FormData): Promise<ActionResult> {
     }
   }
 
-  const durationMs = endsAt
-    ? Math.max(0, tsToUtcMs(endsAt) - tsToUtcMs(startsAt))
+  const durationMs = normEndsAt
+    ? Math.max(0, tsToUtcMs(normEndsAt) - tsToUtcMs(normStartsAt))
     : 0;
   const sharedRow = {
-    location: location || null,
+    // Le lieu est toujours Montataire : on ne le saisit plus (null en base,
+    // l'affichage retombe sur « Montataire (60) »).
+    location: null,
     seats_total: seatsTotalRaw ? Number(seatsTotalRaw) : null,
     status,
   };
 
-  const occurrences: string[] = [startsAt];
+  const occurrences: string[] = [normStartsAt];
   if (recurrence !== "none") {
     const limit = recurrenceCount || MAX_OCCURRENCES;
-    let cur = startsAt;
+    let cur = normStartsAt;
     while (occurrences.length < limit) {
       cur = nextOccurrence(cur, recurrence);
       if (recurrenceUntil && cur.slice(0, 10) > recurrenceUntil) break;
@@ -195,11 +202,41 @@ export async function createSession(formData: FormData): Promise<ActionResult> {
       formation_slug: slug,
       categories: cats,
       starts_at: startTs,
-      ends_at: endsAt ? tsFromUtcMs(tsToUtcMs(startTs) + durationMs) : null,
+      ends_at: normEndsAt ? tsFromUtcMs(tsToUtcMs(startTs) + durationMs) : null,
     }));
   });
 
   const { error } = await supabase.from("sessions").insert(rows);
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePublic();
+  return { ok: true };
+}
+
+/** Modifie une session planifiée : dates (toujours 09h–17h) et catégories. */
+export async function updateSession(
+  id: string,
+  data: { startDate: string; endDate: string; categories: string[] | null }
+): Promise<ActionResult> {
+  const { supabase, ok } = await requireAdmin();
+  if (!ok) return { ok: false, error: "Non autorisé." };
+
+  const { startDate, endDate } = data;
+  if (!startDate) {
+    return { ok: false, error: "La date de début est requise." };
+  }
+  if (endDate && endDate < startDate) {
+    return { ok: false, error: "La date de fin doit être après la date de début." };
+  }
+
+  const starts_at = `${startDate}T09:00:00`;
+  const ends_at = `${endDate || startDate}T17:00:00`;
+
+  const { error } = await supabase
+    .from("sessions")
+    .update({ starts_at, ends_at, categories: data.categories })
+    .eq("id", id);
 
   if (error) return { ok: false, error: error.message };
 

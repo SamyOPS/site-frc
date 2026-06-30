@@ -11,6 +11,10 @@ type ViewMode = "day" | "week" | "month";
 const TIME_START = 8;
 const TIME_END = 19;
 const HOURS = TIME_END - TIME_START;
+// Bornes d'une journée de formation : les sessions occupent chaque jour
+// de 9h à 17h (notamment les sessions qui s'étalent sur plusieurs jours).
+const DAY_START = 9;
+const DAY_END = 17;
 const PX_PER_HOUR = 60;
 const WEEK_DAYS = 6;
 
@@ -98,6 +102,32 @@ export function CalendrierView({ sessions, titleBySlug, priceBySlug }: Props) {
   const [now, setNow] = useState<Date>(() => new Date());
   const today = useMemo(() => startOfDay(now), [now]);
 
+  // Filtre par formation : on ne propose que les formations réellement planifiées.
+  const [filterSlug, setFilterSlug] = useState<string>("all");
+
+  const formationOptions = useMemo(() => {
+    const seen = new Map<string, string>();
+    for (const s of sessions) {
+      if (!seen.has(s.formation_slug)) {
+        seen.set(
+          s.formation_slug,
+          titleBySlug[s.formation_slug] ?? s.formation_slug
+        );
+      }
+    }
+    return [...seen.entries()]
+      .map(([slug, title]) => ({ slug, title }))
+      .sort((a, b) => a.title.localeCompare(b.title, "fr"));
+  }, [sessions, titleBySlug]);
+
+  const filteredSessions = useMemo(
+    () =>
+      filterSlug === "all"
+        ? sessions
+        : sessions.filter((s) => s.formation_slug === filterSlug),
+    [sessions, filterSlug]
+  );
+
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(id);
@@ -181,12 +211,44 @@ export function CalendrierView({ sessions, titleBySlug, priceBySlug }: Props) {
         <ViewSwitcher value={view} onChange={setView} />
       </div>
 
+      {/* Filtre par formation */}
+      <div className="flex flex-wrap items-center gap-3 px-4 md:px-6 py-3 border-b border-rule">
+        <label
+          htmlFor="cal-filter"
+          className="text-[10px] uppercase tracking-[0.2em] text-gray font-medium"
+        >
+          Formation
+        </label>
+        <select
+          id="cal-filter"
+          value={filterSlug}
+          onChange={(e) => setFilterSlug(e.target.value)}
+          className="flex-1 sm:flex-none sm:min-w-[280px] border border-rule bg-white px-3 py-2 text-sm text-ink outline-none focus:border-ink"
+        >
+          <option value="all">Toutes les formations</option>
+          {formationOptions.map((f) => (
+            <option key={f.slug} value={f.slug}>
+              {f.title}
+            </option>
+          ))}
+        </select>
+        {filterSlug !== "all" && (
+          <button
+            type="button"
+            onClick={() => setFilterSlug("all")}
+            className="text-[11px] uppercase tracking-[0.16em] text-gray hover:text-ink transition-colors"
+          >
+            Réinitialiser
+          </button>
+        )}
+      </div>
+
       {view === "day" && (
         <DayView
           anchor={anchor}
           today={today}
           now={now}
-          sessions={sessions}
+          sessions={filteredSessions}
           titleBySlug={titleBySlug}
           priceBySlug={priceBySlug}
         />
@@ -196,7 +258,7 @@ export function CalendrierView({ sessions, titleBySlug, priceBySlug }: Props) {
           anchor={anchor}
           today={today}
           now={now}
-          sessions={sessions}
+          sessions={filteredSessions}
           titleBySlug={titleBySlug}
           priceBySlug={priceBySlug}
         />
@@ -205,7 +267,7 @@ export function CalendrierView({ sessions, titleBySlug, priceBySlug }: Props) {
         <MonthView
           anchor={anchor}
           today={today}
-          sessions={sessions}
+          sessions={filteredSessions}
           titleBySlug={titleBySlug}
           priceBySlug={priceBySlug}
           onDayClick={(d) => {
@@ -874,23 +936,37 @@ function SessionHoverCard({
 function blockTimesForDay(s: PublicSession, dayKey: string) {
   const start = parseTs(s.starts_at);
   const end = s.ends_at ? parseTs(s.ends_at) : start;
+  const multiDay = start.dateKey !== end.dateKey;
 
   let hh = start.hh;
   let mm = start.mm;
   let endHH = end.hh;
   let endMM = end.mm;
 
+  // Jour de continuation (ni le premier ni le dernier) : journée pleine 9h–17h.
   if (start.dateKey !== dayKey) {
-    hh = TIME_START;
+    hh = DAY_START;
     mm = 0;
   }
   if (end.dateKey !== dayKey) {
-    endHH = TIME_END;
+    endHH = DAY_END;
     endMM = 0;
   }
   if (start.dateKey === end.dateKey && !s.ends_at) {
-    endHH = Math.min(TIME_END, hh + 8);
+    endHH = Math.min(DAY_END, hh + 8);
     endMM = mm;
+  }
+
+  // Une session sur plusieurs jours reste bornée à 9h–17h chaque jour.
+  if (multiDay) {
+    if (hh < DAY_START) {
+      hh = DAY_START;
+      mm = 0;
+    }
+    if (endHH > DAY_END || (endHH === DAY_END && endMM > 0)) {
+      endHH = DAY_END;
+      endMM = 0;
+    }
   }
 
   return { hh, mm, endHH, endMM };

@@ -43,7 +43,7 @@ const formationBenefits = [
   "Devis personnalisé sous 24h",
   "Montage du dossier de financement",
   "Sessions en France entière",
-  "Plus de 98% de taux de réussite",
+  "99,2% de taux de réussite",
 ];
 
 export default async function Home() {

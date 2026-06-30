@@ -174,7 +174,7 @@ export function CartSidebar() {
 
                       {item.priceFrom != null && (
                         <p className="text-sm font-semibold text-ink whitespace-nowrap">
-                          {item.priceFrom * item.quantity} €
+                          Dès {item.priceFrom * item.quantity} €
                         </p>
                       )}
                     </div>
@@ -192,7 +192,7 @@ export function CartSidebar() {
                 Sous-total
               </span>
               <span className="headline text-xl text-ink">
-                {subtotal > 0 ? `${subtotal} €` : "Sur devis"}
+                {subtotal > 0 ? `Dès ${subtotal} €` : "Sur devis"}
               </span>
             </div>
             <div className="flex flex-col gap-2">

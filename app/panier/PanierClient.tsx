@@ -190,7 +190,7 @@ export function PanierClient() {
             Sous-total estimé
           </span>
           <span className="headline text-2xl text-ink">
-            {subtotal > 0 ? `${subtotal} €` : "—"}
+            {subtotal > 0 ? `Dès ${subtotal} €` : "—"}
           </span>
         </div>
         {hasUnpricedItem && (

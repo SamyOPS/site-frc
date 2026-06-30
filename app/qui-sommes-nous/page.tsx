@@ -5,7 +5,7 @@ import { OiseMap } from "@/components/OiseMap";
 import { PageHero } from "@/components/PageHero";
 import { SectionHeader } from "@/components/SectionHeader";
 import { Reveal } from "@/components/Reveal";
-import { company, engagements, stats } from "@/lib/data";
+import { company, engagements, stats, cacesStats } from "@/lib/data";
 import aboutImage from "@/public/frc/3w6a0433_52035903199_o.webp";
 
 export const metadata: Metadata = {
@@ -79,6 +79,49 @@ export default function QuiSommesNousPage() {
             </div>
           ))}
         </div>
+      </section>
+
+      <section className="container-x py-20 md:py-28">
+        <Reveal>
+          <SectionHeader
+            align="center"
+            eyebrow="Nos résultats"
+            title="Des taux de réussite par catégorie"
+            description="Résultats constatés sur l'ensemble de nos sessions CACES®, par recommandation CNAM."
+          />
+        </Reveal>
+        <Reveal delay={100}>
+          <div className="mt-12 grid gap-0 sm:grid-cols-3 border border-rule">
+            {cacesStats.map((s, i) => (
+              <div
+                key={s.code}
+                className={`bg-white p-8 ${
+                  i > 0 ? "border-t sm:border-t-0 sm:border-l border-rule" : ""
+                }`}
+              >
+                <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-gray">
+                  CACES® {s.code}
+                </p>
+                <p className="mt-4 headline text-5xl text-primary">
+                  {s.successRate}
+                </p>
+                <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-gray">
+                  de réussite
+                </p>
+                <dl className="mt-6 border-t border-rule text-sm">
+                  <div className="flex items-center justify-between py-2.5 border-b border-rule">
+                    <dt className="text-gray normal-case">Taux d&apos;échec</dt>
+                    <dd className="headline text-ink">{s.failRate}</dd>
+                  </div>
+                  <div className="flex items-center justify-between py-2.5">
+                    <dt className="text-gray normal-case">CACES délivrés</dt>
+                    <dd className="headline text-ink">{s.delivered}</dd>
+                  </div>
+                </dl>
+              </div>
+            ))}
+          </div>
+        </Reveal>
       </section>
 
       <section className="container-x py-20 md:py-28">
