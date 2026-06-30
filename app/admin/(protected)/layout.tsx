@@ -28,7 +28,7 @@ export default async function AdminProtectedLayout({
   return (
     <div className="min-h-screen bg-light flex flex-col">
       <header className="bg-ink text-white">
-        <div className="container-x flex items-center justify-between h-16">
+        <div className="w-full px-5 md:px-8 flex items-center justify-between h-16">
           <Link href="/admin" className="flex items-center gap-3">
             <Image
               src="/new logo frc.png"
@@ -54,7 +54,7 @@ export default async function AdminProtectedLayout({
         </div>
       </header>
 
-      <main className="flex-1 container-x py-10 md:py-14">{children}</main>
+      <main className="flex-1 w-full px-5 md:px-8 py-10 md:py-14">{children}</main>
     </div>
   );
 }

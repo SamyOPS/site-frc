@@ -5,6 +5,8 @@ import { SessionsManager } from "./SessionsManager";
 import { DocumentsManager } from "./DocumentsManager";
 import { ReviewsManager } from "./ReviewsManager";
 import { ReviewQrPanel } from "./ReviewQrPanel";
+import { PromotionsManager } from "./PromotionsManager";
+import { AdminShell, type AdminSection } from "./AdminShell";
 
 export const metadata = { title: "Administration — FRC Technique" };
 
@@ -37,6 +39,14 @@ export type ReviewRow = {
   status: "pending" | "approved" | "rejected";
   created_at: string;
 };
+export type PromotionRow = {
+  id: string;
+  label: string;
+  active: boolean;
+  starts_on: string | null;
+  ends_on: string | null;
+  created_at: string;
+};
 
 export default async function AdminDashboard() {
   const supabase = await createClient();
@@ -46,6 +56,7 @@ export default async function AdminDashboard() {
     { data: sessions },
     { data: documents },
     { data: reviews },
+    { data: promotions },
   ] = await Promise.all([
     supabase.from("formation_prices").select("slug, price_from"),
     supabase
@@ -64,6 +75,10 @@ export default async function AdminDashboard() {
       .from("reviews")
       .select("id, name, quote, rating, status, created_at")
       .order("created_at", { ascending: false }),
+    supabase
+      .from("promotions")
+      .select("id, label, active, starts_on, ends_on, created_at")
+      .order("created_at", { ascending: false }),
   ]);
 
   // Avis en attente d'abord, puis le reste par date décroissante.
@@ -80,41 +95,81 @@ export default async function AdminDashboard() {
     categories: f.categoriesDetail ?? null,
   }));
 
+  const pendingReviews = reviewList.filter((r) => r.status === "pending").length;
+  const activePromos = (promotions ?? []).filter(
+    (p) => (p as PromotionRow).active
+  ).length;
+
+  const sections: AdminSection[] = [
+    {
+      id: "promotions",
+      label: "Promotions",
+      badge: activePromos || undefined,
+      content: (
+        <PromotionsManager promotions={(promotions ?? []) as PromotionRow[]} />
+      ),
+    },
+    {
+      id: "tarifs",
+      label: "Tarifs",
+      content: (
+        <PriceEditor
+          formations={formationList}
+          prices={(prices ?? []) as PriceRow[]}
+        />
+      ),
+    },
+    {
+      id: "planning",
+      label: "Planning",
+      content: (
+        <SessionsManager
+          formations={formationList.map(({ slug, title, categories }) => ({
+            slug,
+            title,
+            categories,
+          }))}
+          sessions={(sessions ?? []) as SessionRow[]}
+        />
+      ),
+    },
+    {
+      id: "documents",
+      label: "Documents",
+      content: (
+        <DocumentsManager
+          formations={formationList.map(({ slug, title }) => ({ slug, title }))}
+          documents={(documents ?? []) as DocumentRow[]}
+        />
+      ),
+    },
+    {
+      id: "avis",
+      label: "Avis",
+      badge: pendingReviews || undefined,
+      content: (
+        <div className="space-y-10">
+          <ReviewQrPanel url="https://frc-technique.fr/avis" />
+          <ReviewsManager reviews={reviewList} />
+        </div>
+      ),
+    },
+  ];
+
   return (
-    <div className="space-y-14">
+    <div className="space-y-8 md:space-y-10">
       <div>
         <p className="eyebrow">Tableau de bord</p>
         <h1 className="mt-2 headline text-3xl md:text-4xl text-ink">
           Gestion du site
         </h1>
         <p className="mt-2 text-sm text-gray normal-case">
-          Modifiez les prix des formations et le planning des sessions. Les
-          changements sont publiés automatiquement sur le site.
+          Choisissez une catégorie dans le menu. Les changements sont publiés
+          automatiquement sur le site.
         </p>
       </div>
 
-      <PriceEditor
-        formations={formationList}
-        prices={(prices ?? []) as PriceRow[]}
-      />
-
-      <SessionsManager
-        formations={formationList.map(({ slug, title, categories }) => ({
-          slug,
-          title,
-          categories,
-        }))}
-        sessions={(sessions ?? []) as SessionRow[]}
-      />
-
-      <DocumentsManager
-        formations={formationList.map(({ slug, title }) => ({ slug, title }))}
-        documents={(documents ?? []) as DocumentRow[]}
-      />
-
-      <ReviewQrPanel url="https://frc-technique.fr/avis" />
-
-      <ReviewsManager reviews={reviewList} />
+      <AdminShell sections={sections} />
     </div>
   );
 }

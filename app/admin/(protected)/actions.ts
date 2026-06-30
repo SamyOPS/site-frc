@@ -334,3 +334,69 @@ export async function deleteReview(id: string): Promise<ActionResult> {
   revalidatePublic();
   return { ok: true };
 }
+
+/** Crée une promotion affichée dans le bandeau du hero. */
+export async function createPromotion(
+  formData: FormData
+): Promise<ActionResult> {
+  const { supabase, ok } = await requireAdmin();
+  if (!ok) return { ok: false, error: "Non autorisé." };
+
+  const label = String(formData.get("label") ?? "").trim();
+  const startsOn = String(formData.get("starts_on") ?? "");
+  const endsOn = String(formData.get("ends_on") ?? "");
+
+  if (!label) {
+    return { ok: false, error: "Le texte de la promotion est requis." };
+  }
+  if (label.length > 200) {
+    return { ok: false, error: "Texte trop long (200 caractères max)." };
+  }
+  if (startsOn && endsOn && endsOn < startsOn) {
+    return { ok: false, error: "La date de fin doit être après la date de début." };
+  }
+
+  const { error } = await supabase.from("promotions").insert({
+    label,
+    active: true,
+    starts_on: startsOn || null,
+    ends_on: endsOn || null,
+  });
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePublic();
+  return { ok: true };
+}
+
+/** Active ou désactive une promotion. */
+export async function setPromotionActive(
+  id: string,
+  active: boolean
+): Promise<ActionResult> {
+  const { supabase, ok } = await requireAdmin();
+  if (!ok) return { ok: false, error: "Non autorisé." };
+
+  const { error } = await supabase
+    .from("promotions")
+    .update({ active })
+    .eq("id", id);
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePublic();
+  return { ok: true };
+}
+
+/** Supprime définitivement une promotion. */
+export async function deletePromotion(id: string): Promise<ActionResult> {
+  const { supabase, ok } = await requireAdmin();
+  if (!ok) return { ok: false, error: "Non autorisé." };
+
+  const { error } = await supabase.from("promotions").delete().eq("id", id);
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePublic();
+  return { ok: true };
+}

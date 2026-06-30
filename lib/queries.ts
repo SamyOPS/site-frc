@@ -44,6 +44,32 @@ export async function getUpcomingSessions(): Promise<PublicSession[]> {
   }
 }
 
+/**
+ * Promotions actives à afficher dans le bandeau du hero, filtrées sur leur
+ * fenêtre de validité (dates optionnelles). Les plus récentes d'abord.
+ */
+export async function getActivePromotions(): Promise<string[]> {
+  try {
+    const { data, error } = await supabasePublic
+      .from("promotions")
+      .select("label, starts_on, ends_on")
+      .eq("active", true)
+      .order("created_at", { ascending: false });
+    if (error || !data) return [];
+    const today = new Date().toISOString().slice(0, 10);
+    return data
+      .filter(
+        (p) =>
+          (!p.starts_on || p.starts_on <= today) &&
+          (!p.ends_on || p.ends_on >= today)
+      )
+      .map((p) => p.label as string)
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
 /** Avis clients approuvés (les plus récents d'abord). */
 export async function getApprovedReviews(): Promise<Testimonial[]> {
   try {

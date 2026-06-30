@@ -2,11 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { HeroNav } from "@/components/HeroNav";
 import { AnimatedMarquee } from "@/components/AnimatedMarquee";
+import { PromoBanner } from "@/components/PromoBanner";
+import { getActivePromotions } from "@/lib/queries";
 import qualiopiLogo from "@/public/logo_qualiopi.png";
 import cpfLogo from "@/public/logo cpf.png";
 import franceTravailLogo from "@/public/France-travail-2023.svg.png";
 
-export function HeroSlider() {
+export async function HeroSlider() {
+  const promotions = await getActivePromotions();
+
   return (
     <section
       className="relative overflow-hidden text-ink min-h-[560px] md:min-h-[70vh] flex flex-col"
@@ -15,6 +19,8 @@ export function HeroSlider() {
           "linear-gradient(135deg, #ffffff 0%, #dcfce7 50%, #bbf7d0 100%)",
       }}
     >
+      <PromoBanner promotions={promotions} />
+
       <span
         aria-hidden="true"
         className="absolute inset-0 pointer-events-none"

@@ -138,6 +138,16 @@
   }
 }
 
+/* Défilement horizontal (bandeau de promotions). */
+@keyframes marquee-x {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
 @utility grid-bg {
   background-image: linear-gradient(
       to right,
