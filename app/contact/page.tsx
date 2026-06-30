@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 type ContactCard = {
   title: string;
-  value: string;
+  value: ReactNode;
   note?: string;
   href?: string;
   icon: ReactNode;
@@ -54,8 +54,18 @@ const contactCards: ContactCard[] = [
   },
   {
     title: "Certification",
-    value: "Qualiopi",
-    note: "pour les actions de formation · éligible CPF, OPCO, France Travail",
+    value: (
+      <>
+        <span className="block">Qualiopi</span>
+        <span className="block mt-1 text-[11px] font-normal tracking-normal normal-case leading-snug text-gray">
+          pour les actions de formation
+        </span>
+        <span className="block mt-3">CACES®</span>
+        <span className="block mt-1 text-[11px] font-normal tracking-normal normal-case leading-snug text-gray">
+          R489, R486 et R482 · éligible CPF, OPCO, France Travail
+        </span>
+      </>
+    ),
     icon: (
       <>
         <path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z" />
@@ -102,7 +112,11 @@ export default function ContactPage() {
                 <p className="mt-6 text-[10px] font-medium uppercase tracking-[0.24em] text-gray">
                   {card.title}
                 </p>
-                <p className="mt-2 headline text-lg text-ink break-words">
+                <p
+                  className={`mt-2 headline text-lg text-ink break-words whitespace-pre-line ${
+                    card.title === "Email" ? "lowercase" : ""
+                  }`}
+                >
                   {card.value}
                 </p>
                 {card.note && (

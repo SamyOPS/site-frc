@@ -589,8 +589,8 @@ export const faq: FaqItem[] = [
 export const company = {
   name: "FRC Technique",
   email: "formation@frc-technique.com",
-  address: "Montataire (60), France",
-  hours: "Lun-Ven 08h-18h",
+  address: "4 av. de la Libération, 60160 Montataire",
+  hours: "Lun-Ven 8h30-12h / 13h30-17h",
   siren: "880 704 754",
   legalForm: "SAS au capital de 50 000 €",
   created: "6 janvier 2020",

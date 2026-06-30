@@ -205,6 +205,14 @@ export default function QuiSommesNousPage() {
             >
               Certificat Qualiopi
             </a>
+            <a
+              href="/certificat-caces.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-outline text-white hover:bg-white hover:text-ink"
+            >
+              Certificat CACES®
+            </a>
           </div>
         </div>
       </section>

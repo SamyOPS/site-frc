@@ -4,6 +4,7 @@ import { PriceEditor } from "./PriceEditor";
 import { SessionsManager } from "./SessionsManager";
 import { DocumentsManager } from "./DocumentsManager";
 import { ReviewsManager } from "./ReviewsManager";
+import { ReviewQrPanel } from "./ReviewQrPanel";
 
 export const metadata = { title: "Administration — FRC Technique" };
 
@@ -110,6 +111,8 @@ export default async function AdminDashboard() {
         formations={formationList.map(({ slug, title }) => ({ slug, title }))}
         documents={(documents ?? []) as DocumentRow[]}
       />
+
+      <ReviewQrPanel url="https://frc-technique.fr/avis" />
 
       <ReviewsManager reviews={reviewList} />
     </div>

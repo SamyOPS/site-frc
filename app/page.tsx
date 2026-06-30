@@ -148,6 +148,14 @@ export default async function Home() {
               >
                 Certificat Qualiopi
               </a>
+              <a
+                href="/certificat-caces.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-outline text-ink hover:bg-ink hover:text-white"
+              >
+                Certificat CACES®
+              </a>
             </div>
           </Reveal>
         </div>

@@ -35,6 +35,15 @@ export function Footer() {
             <span aria-hidden="true">↓</span> Consulter notre certificat
             Qualiopi (PDF)
           </a>
+          <a
+            href="/certificat-caces.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 inline-flex items-center gap-2 text-xs text-white/70 hover:text-primary transition-colors normal-case"
+          >
+            <span aria-hidden="true">↓</span> Consulter notre certificat
+            CACES® (PDF)
+          </a>
         </div>
 
         <div>

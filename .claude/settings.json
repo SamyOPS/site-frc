@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(npm view qrcode.react version 2>&1)",
+      "PowerShell(npm install qrcode.react@4.2.0 2>&1)",
+      "Bash(cat \"C:/Users/azeez/AppData/Local/npm-cache/_logs/2026-06-29T15_40_14_019Z-eresolve-report.txt\" 2>/dev/null | head -40)",
+      "Read(//c/Users/azeez/AppData/Local/npm-cache/_logs/**)",
+      "PowerShell(pip install segno --quiet 2>&1)",
+      "PowerShell(python -c \"import segno; print\\('segno ok'\\)\" 2>&1)",
+      "PowerShell(cd \"c:/Users/azeez/Desktop/site-frc\"; $same = \\(Get-Content _mine.txt -Raw\\).Trim\\(\\) -eq \\(Get-Content _seg.txt -Raw\\).Trim\\(\\); if \\($same\\) { Write-Output \"IDENTICAL\" } else { Write-Output \"DIFFERENT\"; $a=Get-Content _mine.txt; $b=Get-Content _seg.txt; $d=0; for\\($i=0;$i -lt $a.Count;$i++\\){ if\\($a[$i] -ne $b[$i]\\){ $d++ } }; Write-Output \"differing rows: $d / $\\($a.Count\\)\" })",
+      "PowerShell(cd \"c:/Users/azeez/Desktop/site-frc\"; npx tsx _qrdump.ts 2>&1 | Select-Object -Last 1; python -c \"import segno; qr=segno.make\\('https://frc-technique.fr/avis', error='m', mask=0\\); rows=[''.join\\(str\\(b\\) for b in row\\) for row in qr.matrix]; open\\('_seg.txt','w'\\).write\\(chr\\(10\\).join\\(rows\\)\\)\"; $same = \\(Get-Content _mine.txt -Raw\\).Trim\\(\\) -eq \\(Get-Content _seg.txt -Raw\\).Trim\\(\\); if \\($same\\) { Write-Output \"IDENTICAL \\(mask 0\\)\" } else { Write-Output \"DIFFERENT\"; $a=Get-Content _mine.txt; $b=Get-Content _seg.txt; $d=0; for\\($i=0;$i -lt $a.Count;$i++\\){ if\\($a[$i] -ne $b[$i]\\){ $d++ } }; Write-Output \"differing rows: $d / $\\($a.Count\\)\" })",
+      "PowerShell(pip install opencv-python-headless numpy --quiet 2>&1)",
+      "PowerShell(python -c \"import cv2,numpy; print\\('cv2', cv2.__version__\\)\" 2>&1)",
+      "PowerShell(cd \"c:/Users/azeez/Desktop/site-frc\"; npx tsx _qrdump.ts 2>&1 | Out-Null; $a=Get-Content _mine.txt; $b=Get-Content _seg.txt; Write-Output \"row0 mine: $\\($a[0]\\)\"; Write-Output \"row0 seg : $\\($b[0]\\)\"; $d=0; for\\($i=0;$i -lt $a.Count;$i++\\){ if\\($a[$i] -ne $b[$i]\\){ $d++ } }; Write-Output \"differing rows: $d / $\\($a.Count\\)\")",
+      "PowerShell(cd \"c:/Users/azeez/Desktop/site-frc\"; $mine=\\(npx tsx _cw.ts 2>$null\\).Trim\\(\\); $ref=\\(python _refcw.py\\).Trim\\(\\); if \\($mine -eq $ref\\) { Write-Output \"CODEWORDS IDENTICAL\" } else { Write-Output \"CODEWORDS DIFFER\"; Write-Output \"mine: $mine\"; Write-Output \"ref : $ref\" })",
+      "PowerShell(cd \"c:/Users/azeez/Desktop/site-frc\"; $mine=\\(npx tsx _cw.ts 2>$null\\).Trim\\(\\); $ref=\\(python _refcw.py\\).Trim\\(\\); if \\($mine -eq $ref\\) { Write-Output \"CODEWORDS IDENTICAL\" } else { Write-Output \"DIFFER\"; Write-Output \"mine: $mine\"; Write-Output \"ref : $ref\" })",
+      "Bash(rm -f _qrtest.ts _qrdump.ts _cw.ts _refcw.py _decode.py _batch.ts _batchdecode.py _mine.txt _seg.txt _inputs.txt _mine.png _b0.txt _b1.txt _b2.txt _b3.txt _b4.txt _b5.txt)",
+      "Bash(ls _*.*)"
+    ]
+  }
+}
