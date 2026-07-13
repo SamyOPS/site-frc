@@ -149,7 +149,7 @@ export default async function AdminDashboard() {
       badge: pendingReviews || undefined,
       content: (
         <div className="space-y-10">
-          <ReviewQrPanel url="https://frc-technique.fr/avis" />
+          <ReviewQrPanel url="https://www.frc-technique.com/avis" />
           <ReviewsManager reviews={reviewList} />
         </div>
       ),

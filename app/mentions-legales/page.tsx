@@ -5,7 +5,7 @@ import { company } from "@/lib/data";
 export const metadata: Metadata = {
   title: "Mentions légales",
   description:
-    "Mentions légales du site frc-technique.fr — éditeur, hébergement, propriété intellectuelle.",
+    "Mentions légales du site www.frc-technique.com — éditeur, hébergement, propriété intellectuelle.",
 };
 
 export default function MentionsLegalesPage() {

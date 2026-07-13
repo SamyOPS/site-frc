@@ -37,7 +37,7 @@ export async function submitContact(
     ? `Site contact — ${subject}`
     : `Site contact — ${name}`;
 
-  const text = `Nouveau message depuis le formulaire de contact frc-technique.fr.
+  const text = `Nouveau message depuis le formulaire de contact www.frc-technique.com.
 
 Contact
 -------
@@ -78,7 +78,7 @@ ${message}
     )}</div>
   </td></tr>
   <tr><td style="padding:16px 28px 24px;border-top:1px solid #e5e7eb;font-size:11px;color:#8d9297">
-    Envoyé depuis frc-technique.fr · ${new Date().toLocaleString("fr-FR")}
+    Envoyé depuis www.frc-technique.com · ${new Date().toLocaleString("fr-FR")}
   </td></tr>
 </table>
 </body></html>`;

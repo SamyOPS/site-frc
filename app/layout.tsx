@@ -22,7 +22,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://frc-technique.fr"),
+  metadataBase: new URL("https://www.frc-technique.com"),
   title: {
     default: "FRC Technique — Formations CACES® & Prévention | Qualiopi",
     template: "%s | FRC Technique",
