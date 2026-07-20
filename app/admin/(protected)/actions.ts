@@ -108,6 +108,79 @@ function nextOccurrence(start: string, frequency: string): string {
 
 const MAX_OCCURRENCES = 52;
 
+type OccurrenceParams = {
+  startDate: string;
+  endDate: string;
+  recurrence: string;
+  recurrenceUntil: string;
+  recurrenceCount: number;
+};
+
+/**
+ * Valide les dates/la récurrence et calcule les créneaux d'une série.
+ * Chaque créneau se déroule de 09h00 à 17h00 (la date de fin définit la durée,
+ * réappliquée à chaque occurrence). Réutilisé par la création et la modification
+ * de série.
+ */
+function resolveOccurrences(
+  params: OccurrenceParams
+):
+  | { ok: true; times: { starts_at: string; ends_at: string }[] }
+  | { ok: false; error: string } {
+  const { startDate, endDate, recurrence, recurrenceUntil } = params;
+
+  if (!startDate) {
+    return { ok: false, error: "La date de début est requise." };
+  }
+  if (endDate && endDate < startDate) {
+    return { ok: false, error: "La date de fin doit être après la date de début." };
+  }
+
+  let recurrenceCount = params.recurrenceCount;
+  if (recurrence !== "none") {
+    if (!recurrenceUntil && !recurrenceCount) {
+      return {
+        ok: false,
+        error: "Indiquez une date de fin de série ou un nombre de séances.",
+      };
+    }
+    if (recurrenceUntil && recurrenceUntil <= startDate) {
+      return {
+        ok: false,
+        error: "La fin de série doit être après la date de début.",
+      };
+    }
+    if (recurrenceCount) {
+      if (!Number.isFinite(recurrenceCount) || recurrenceCount < 2) {
+        return { ok: false, error: "Nombre de séances invalide (min. 2)." };
+      }
+      recurrenceCount = Math.min(MAX_OCCURRENCES, Math.floor(recurrenceCount));
+    }
+  }
+
+  // Horaires fixes : 09h00 → 17h00 (le dernier jour finit à 17h).
+  const normStartsAt = `${startDate}T09:00:00`;
+  const normEndsAt = `${endDate || startDate}T17:00:00`;
+  const durationMs = Math.max(0, tsToUtcMs(normEndsAt) - tsToUtcMs(normStartsAt));
+
+  const starts: string[] = [normStartsAt];
+  if (recurrence !== "none") {
+    const limit = recurrenceCount || MAX_OCCURRENCES;
+    let cur = normStartsAt;
+    while (starts.length < limit) {
+      cur = nextOccurrence(cur, recurrence);
+      if (recurrenceUntil && cur.slice(0, 10) > recurrenceUntil) break;
+      starts.push(cur);
+    }
+  }
+
+  const times = starts.map((s) => ({
+    starts_at: s,
+    ends_at: tsFromUtcMs(tsToUtcMs(s) + durationMs),
+  }));
+  return { ok: true, times };
+}
+
 /** Crée une session de planning (avec récurrence optionnelle). */
 export async function createSession(formData: FormData): Promise<ActionResult> {
   const { supabase, ok } = await requireAdmin();
@@ -142,67 +215,33 @@ export async function createSession(formData: FormData): Promise<ActionResult> {
     if (cats.length > 0) categoriesBySlug.set(slug, cats);
   }
 
-  if (endDate && endDate < startDate) {
-    return { ok: false, error: "La date de fin doit être après la date de début." };
-  }
+  const resolved = resolveOccurrences({
+    startDate,
+    endDate,
+    recurrence,
+    recurrenceUntil,
+    recurrenceCount: recurrenceCountRaw ? Number(recurrenceCountRaw) : 0,
+  });
+  if (!resolved.ok) return { ok: false, error: resolved.error };
+  const { times } = resolved;
+  const seatsTotal = seatsTotalRaw ? Number(seatsTotalRaw) : null;
 
-  // Horaires fixes : chaque jour de session se déroule de 09h00 à 17h00.
-  // Le dernier jour (date de fin, ou date de début si session d'un jour) finit à 17h.
-  const normStartsAt = `${startDate}T09:00:00`;
-  const normEndsAt = `${endDate || startDate}T17:00:00`;
-
-  let recurrenceCount = recurrenceCountRaw ? Number(recurrenceCountRaw) : 0;
-  if (recurrence !== "none") {
-    if (!recurrenceUntil && !recurrenceCount) {
-      return {
-        ok: false,
-        error: "Indiquez une date de fin de série ou un nombre de séances.",
-      };
-    }
-    if (recurrenceUntil && recurrenceUntil <= startDate) {
-      return {
-        ok: false,
-        error: "La fin de série doit être après la date de début.",
-      };
-    }
-    if (recurrenceCount) {
-      if (!Number.isFinite(recurrenceCount) || recurrenceCount < 2) {
-        return { ok: false, error: "Nombre de séances invalide (min. 2)." };
-      }
-      recurrenceCount = Math.min(MAX_OCCURRENCES, Math.floor(recurrenceCount));
-    }
-  }
-
-  const durationMs = normEndsAt
-    ? Math.max(0, tsToUtcMs(normEndsAt) - tsToUtcMs(normStartsAt))
-    : 0;
-  const sharedRow = {
-    // Le lieu est toujours Montataire : on ne le saisit plus (null en base,
-    // l'affichage retombe sur « Montataire (60) »).
-    location: null,
-    seats_total: seatsTotalRaw ? Number(seatsTotalRaw) : null,
-    status,
-  };
-
-  const occurrences: string[] = [normStartsAt];
-  if (recurrence !== "none") {
-    const limit = recurrenceCount || MAX_OCCURRENCES;
-    let cur = normStartsAt;
-    while (occurrences.length < limit) {
-      cur = nextOccurrence(cur, recurrence);
-      if (recurrenceUntil && cur.slice(0, 10) > recurrenceUntil) break;
-      occurrences.push(cur);
-    }
-  }
-
+  // Le lieu est toujours Montataire : non saisi (null en base, l'affichage
+  // retombe sur « Montataire (60) »). Une récurrence produisant plusieurs
+  // séances reçoit un `series_id` commun PAR FORMATION, pour pouvoir gérer
+  // toute la série d'un bloc (modification / suppression groupée).
   const rows = formationSlugs.flatMap((slug) => {
     const cats = categoriesBySlug.get(slug) ?? null;
-    return occurrences.map((startTs) => ({
-      ...sharedRow,
+    const seriesId = times.length > 1 ? crypto.randomUUID() : null;
+    return times.map((t) => ({
+      location: null,
+      seats_total: seatsTotal,
+      status,
       formation_slug: slug,
       categories: cats,
-      starts_at: startTs,
-      ends_at: normEndsAt ? tsFromUtcMs(tsToUtcMs(startTs) + durationMs) : null,
+      starts_at: t.starts_at,
+      ends_at: t.ends_at,
+      series_id: seriesId,
     }));
   });
 
@@ -294,6 +333,84 @@ export async function deleteSession(id: string): Promise<ActionResult> {
   const { error } = await supabase.from("sessions").delete().eq("id", id);
 
   if (error) return { ok: false, error: error.message };
+
+  revalidatePublic();
+  return { ok: true };
+}
+
+/** Supprime toutes les séances d'une série récurrente d'un coup. */
+export async function deleteSeries(seriesId: string): Promise<ActionResult> {
+  const { supabase, ok } = await requireAdmin();
+  if (!ok) return { ok: false, error: "Non autorisé." };
+  if (!seriesId) return { ok: false, error: "Série introuvable." };
+
+  const { error } = await supabase
+    .from("sessions")
+    .delete()
+    .eq("series_id", seriesId);
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePublic();
+  return { ok: true };
+}
+
+/**
+ * Remplace entièrement une série : régénère toutes ses séances à partir des
+ * nouveaux paramètres (dates, récurrence, catégories, places, statut).
+ * On insère la nouvelle série (nouvel identifiant) PUIS on supprime l'ancienne,
+ * afin que l'ancienne reste intacte si l'insertion échoue.
+ */
+export async function updateSeries(
+  seriesId: string,
+  data: {
+    slug: string;
+    categories: string[] | null;
+    startDate: string;
+    endDate: string;
+    seatsTotal: number | null;
+    status: string;
+    recurrence: string;
+    recurrenceUntil: string;
+    recurrenceCount: number;
+  }
+): Promise<ActionResult> {
+  const { supabase, ok } = await requireAdmin();
+  if (!ok) return { ok: false, error: "Non autorisé." };
+  if (!seriesId || !data.slug) {
+    return { ok: false, error: "Série introuvable." };
+  }
+
+  const resolved = resolveOccurrences({
+    startDate: data.startDate,
+    endDate: data.endDate,
+    recurrence: data.recurrence,
+    recurrenceUntil: data.recurrenceUntil,
+    recurrenceCount: data.recurrenceCount,
+  });
+  if (!resolved.ok) return { ok: false, error: resolved.error };
+  const { times } = resolved;
+
+  const newSeriesId = times.length > 1 ? crypto.randomUUID() : null;
+  const rows = times.map((t) => ({
+    location: null,
+    seats_total: data.seatsTotal,
+    status: data.status,
+    formation_slug: data.slug,
+    categories: data.categories,
+    starts_at: t.starts_at,
+    ends_at: t.ends_at,
+    series_id: newSeriesId,
+  }));
+
+  const { error: insertError } = await supabase.from("sessions").insert(rows);
+  if (insertError) return { ok: false, error: insertError.message };
+
+  const { error: deleteError } = await supabase
+    .from("sessions")
+    .delete()
+    .eq("series_id", seriesId);
+  if (deleteError) return { ok: false, error: deleteError.message };
 
   revalidatePublic();
   return { ok: true };

@@ -20,6 +20,7 @@ export type SessionRow = {
   seats_total: number | null;
   status: string;
   categories: string[] | null;
+  series_id: string | null;
 };
 export type DocumentRow = {
   id: string;
@@ -62,7 +63,7 @@ export default async function AdminDashboard() {
     supabase
       .from("sessions")
       .select(
-        "id, formation_slug, starts_at, ends_at, location, seats_total, status, categories"
+        "id, formation_slug, starts_at, ends_at, location, seats_total, status, categories, series_id"
       )
       .order("starts_at", { ascending: true }),
     supabase
