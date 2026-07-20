@@ -55,7 +55,7 @@ export const formations: Formation[] = [
     subtitle: "Catégories 1A · 1B · 2B · 3 · 5 · 6",
     description:
       "Conduite en sécurité des chariots automoteurs à conducteur porté.",
-    duration: "3 à 5 jours",
+    duration: "2 à 4 jours",
     validity: "5 ans",
     funding: "CPF · OPCO · France Travail",
     priceFrom: 459,
