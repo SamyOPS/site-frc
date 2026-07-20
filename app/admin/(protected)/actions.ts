@@ -369,6 +369,40 @@ export async function createPromotion(
   return { ok: true };
 }
 
+/** Modifie une promotion existante (texte et fenêtre de dates). */
+export async function updatePromotion(
+  id: string,
+  data: { label: string; startsOn: string; endsOn: string }
+): Promise<ActionResult> {
+  const { supabase, ok } = await requireAdmin();
+  if (!ok) return { ok: false, error: "Non autorisé." };
+
+  const label = data.label.trim();
+  if (!label) {
+    return { ok: false, error: "Le texte de la promotion est requis." };
+  }
+  if (label.length > 200) {
+    return { ok: false, error: "Texte trop long (200 caractères max)." };
+  }
+  if (data.startsOn && data.endsOn && data.endsOn < data.startsOn) {
+    return { ok: false, error: "La date de fin doit être après la date de début." };
+  }
+
+  const { error } = await supabase
+    .from("promotions")
+    .update({
+      label,
+      starts_on: data.startsOn || null,
+      ends_on: data.endsOn || null,
+    })
+    .eq("id", id);
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePublic();
+  return { ok: true };
+}
+
 /** Active ou désactive une promotion. */
 export async function setPromotionActive(
   id: string,

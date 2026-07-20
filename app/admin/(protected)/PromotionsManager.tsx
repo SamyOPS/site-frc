@@ -5,6 +5,7 @@ import {
   createPromotion,
   deletePromotion,
   setPromotionActive,
+  updatePromotion,
 } from "./actions";
 import type { PromotionRow } from "./page";
 
@@ -44,12 +45,25 @@ export function PromotionsManager({
   const formRef = useRef<HTMLFormElement>(null);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   function run(fn: () => Promise<{ ok: boolean; error?: string }>) {
     setError(null);
     startTransition(async () => {
       const res = await fn();
       if (!res.ok) setError(res.error ?? "Erreur");
+    });
+  }
+
+  function onUpdate(
+    id: string,
+    data: { label: string; startsOn: string; endsOn: string }
+  ) {
+    setError(null);
+    startTransition(async () => {
+      const res = await updatePromotion(id, data);
+      if (res.ok) setEditingId(null);
+      else setError(res.error ?? "Erreur");
     });
   }
 
@@ -138,6 +152,18 @@ export function PromotionsManager({
       ) : (
         <ul className="border-t border-rule">
           {promotions.map((p) => {
+            if (editingId === p.id) {
+              return (
+                <li key={p.id} className="py-4 border-b border-rule">
+                  <PromotionEditor
+                    promotion={p}
+                    disabled={pending}
+                    onCancel={() => setEditingId(null)}
+                    onSave={(data) => onUpdate(p.id, data)}
+                  />
+                </li>
+              );
+            }
             const win = windowLabel(p);
             return (
               <li
@@ -157,6 +183,14 @@ export function PromotionsManager({
                     <span className="ml-2 text-[11px] text-gray">· {win}</span>
                   )}
                 </span>
+                <button
+                  type="button"
+                  onClick={() => setEditingId(p.id)}
+                  disabled={pending}
+                  className="text-[11px] uppercase tracking-[0.16em] border border-rule px-3 py-1.5 text-ink hover:bg-ink hover:text-white hover:border-ink transition-colors disabled:opacity-50"
+                >
+                  Modifier
+                </button>
                 <button
                   type="button"
                   onClick={() => run(() => setPromotionActive(p.id, !p.active))}
@@ -179,5 +213,88 @@ export function PromotionsManager({
         </ul>
       )}
     </section>
+  );
+}
+
+function PromotionEditor({
+  promotion,
+  disabled,
+  onCancel,
+  onSave,
+}: {
+  promotion: PromotionRow;
+  disabled: boolean;
+  onCancel: () => void;
+  onSave: (data: { label: string; startsOn: string; endsOn: string }) => void;
+}) {
+  const [label, setLabel] = useState(promotion.label);
+  const [startsOn, setStartsOn] = useState(
+    promotion.starts_on ? promotion.starts_on.slice(0, 10) : ""
+  );
+  const [endsOn, setEndsOn] = useState(
+    promotion.ends_on ? promotion.ends_on.slice(0, 10) : ""
+  );
+
+  const editClass =
+    "border border-rule bg-light px-3 py-2.5 text-sm text-ink outline-none focus:border-ink";
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 items-end">
+        <label className="flex flex-col gap-1.5 lg:col-span-2">
+          <span className="text-[10px] uppercase tracking-[0.2em] text-gray">
+            Texte de la promotion
+          </span>
+          <input
+            type="text"
+            value={label}
+            maxLength={200}
+            onChange={(e) => setLabel(e.target.value)}
+            className={editClass}
+          />
+        </label>
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[10px] uppercase tracking-[0.2em] text-gray">
+            Début (optionnel)
+          </span>
+          <input
+            type="date"
+            value={startsOn}
+            onChange={(e) => setStartsOn(e.target.value)}
+            className={editClass}
+          />
+        </label>
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[10px] uppercase tracking-[0.2em] text-gray">
+            Fin (optionnel)
+          </span>
+          <input
+            type="date"
+            value={endsOn}
+            onChange={(e) => setEndsOn(e.target.value)}
+            className={editClass}
+          />
+        </label>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => onSave({ label, startsOn, endsOn })}
+          disabled={disabled}
+          className="btn hover:bg-primary-dark hover:border-primary-dark disabled:opacity-50"
+        >
+          Enregistrer
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={disabled}
+          className="text-[11px] uppercase tracking-[0.16em] border border-rule px-3 py-1.5 text-ink hover:bg-light transition-colors disabled:opacity-50"
+        >
+          Annuler
+        </button>
+      </div>
+    </div>
   );
 }
