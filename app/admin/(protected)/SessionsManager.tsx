@@ -10,6 +10,7 @@ import {
   updateSessionSeats,
   updateSessionStatus,
 } from "./actions";
+import { formationColor } from "@/lib/formationColors";
 import type { SessionRow } from "./page";
 
 type SeriesFormData = {
@@ -93,6 +94,8 @@ export function SessionsManager({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingSeriesId, setEditingSeriesId] = useState<string | null>(null);
   const [openSeries, setOpenSeries] = useState<Set<string>>(new Set());
+  const [filterSlug, setFilterSlug] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
   const titleBySlug = new Map(formations.map((f) => [f.slug, f.title]));
   const categoriesBySlug = new Map(
     formations.map((f) => [f.slug, f.categories])
@@ -236,6 +239,11 @@ export function SessionsManager({
           {s.ends_at ? ` → ${formatDateTime(s.ends_at)}` : ""}
         </span>
         <span className="flex-1 text-sm text-gray min-w-[180px]">
+          <span
+            className="inline-block w-2.5 h-2.5 rounded-full align-middle mr-2"
+            style={{ backgroundColor: formationColor(s.formation_slug) }}
+            aria-hidden="true"
+          />
           {titleBySlug.get(s.formation_slug) ?? s.formation_slug}
           {s.categories && s.categories.length > 0 && (
             <span className="ml-2 text-[10px] uppercase tracking-[0.16em] text-primary">
@@ -281,11 +289,35 @@ export function SessionsManager({
       </li>
     );
 
+  // Options du filtre par formation : uniquement les formations réellement
+  // planifiées (triées par titre).
+  const sessionFormationOptions = (() => {
+    const seen = new Map<string, string>();
+    for (const s of sessions) {
+      if (!seen.has(s.formation_slug)) {
+        seen.set(
+          s.formation_slug,
+          titleBySlug.get(s.formation_slug) ?? s.formation_slug
+        );
+      }
+    }
+    return [...seen.entries()]
+      .map(([slug, title]) => ({ slug, title }))
+      .sort((a, b) => a.title.localeCompare(b.title, "fr"));
+  })();
+
+  const filtersActive = filterSlug !== "all" || filterStatus !== "all";
+  const visibleSessions = sessions.filter(
+    (s) =>
+      (filterSlug === "all" || s.formation_slug === filterSlug) &&
+      (filterStatus === "all" || s.status === filterStatus)
+  );
+
   // Regroupe les séances d'une même série récurrente (même series_id, >1 séance).
   // Les sessions triées par date restent ordonnées ; une série est rendue à la
   // position de sa première séance.
   const seriesGroups = new Map<string, SessionRow[]>();
-  for (const s of sessions) {
+  for (const s of visibleSessions) {
     if (s.series_id) {
       const arr = seriesGroups.get(s.series_id) ?? [];
       arr.push(s);
@@ -297,7 +329,7 @@ export function SessionsManager({
     | { kind: "series"; seriesId: string; sessions: SessionRow[] };
   const items: ListItem[] = [];
   const emittedSeries = new Set<string>();
-  for (const s of sessions) {
+  for (const s of visibleSessions) {
     const group = s.series_id ? seriesGroups.get(s.series_id) : undefined;
     if (s.series_id && group && group.length > 1) {
       if (!emittedSeries.has(s.series_id)) {
@@ -539,10 +571,64 @@ export function SessionsManager({
 
       {error && <p className="mb-4 text-xs text-red-500">{error}</p>}
 
+      {/* Filtres de la liste */}
+      {sessions.length > 0 && (
+        <div className="flex flex-wrap items-center gap-3 mb-4">
+          <span className="text-[10px] uppercase tracking-[0.2em] text-gray">
+            Filtrer
+          </span>
+          <select
+            value={filterSlug}
+            onChange={(e) => setFilterSlug(e.target.value)}
+            className="border border-rule bg-light px-3 py-2 text-sm text-ink outline-none focus:border-ink"
+            aria-label="Filtrer par formation"
+          >
+            <option value="all">Toutes les formations</option>
+            {sessionFormationOptions.map((f) => (
+              <option key={f.slug} value={f.slug}>
+                {f.title}
+              </option>
+            ))}
+          </select>
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="border border-rule bg-light px-3 py-2 text-sm text-ink outline-none focus:border-ink"
+            aria-label="Filtrer par statut"
+          >
+            <option value="all">Tous les statuts</option>
+            {Object.entries(statusLabel).map(([v, label]) => (
+              <option key={v} value={v}>
+                {label}
+              </option>
+            ))}
+          </select>
+          {filtersActive && (
+            <button
+              type="button"
+              onClick={() => {
+                setFilterSlug("all");
+                setFilterStatus("all");
+              }}
+              className="text-[11px] uppercase tracking-[0.16em] text-gray hover:text-ink transition-colors"
+            >
+              Réinitialiser
+            </button>
+          )}
+          <span className="text-[11px] text-gray normal-case ml-auto">
+            {visibleSessions.length} séance{visibleSessions.length > 1 ? "s" : ""}
+          </span>
+        </div>
+      )}
+
       {/* Liste des sessions (séances isolées + séries récurrentes groupées) */}
       {sessions.length === 0 ? (
         <p className="text-sm text-gray normal-case">
           Aucune session programmée pour le moment.
+        </p>
+      ) : visibleSessions.length === 0 ? (
+        <p className="text-sm text-gray normal-case">
+          Aucune session ne correspond aux filtres.
         </p>
       ) : (
         <ul className="border-t border-rule">
@@ -575,6 +661,11 @@ export function SessionsManager({
                         Série
                       </span>
                       <span className="text-sm font-medium text-ink min-w-[180px]">
+                        <span
+                          className="inline-block w-2.5 h-2.5 rounded-full align-middle mr-2"
+                          style={{ backgroundColor: formationColor(slug) }}
+                          aria-hidden="true"
+                        />
                         {titleBySlug.get(slug) ?? slug}
                         {first.categories && first.categories.length > 0 && (
                           <span className="ml-2 text-[10px] uppercase tracking-[0.16em] text-primary">

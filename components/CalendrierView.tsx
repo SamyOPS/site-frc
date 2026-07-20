@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useCart } from "@/lib/cart";
+import { formationColor } from "@/lib/formationColors";
 import type { PublicSession } from "@/lib/queries";
 
 type ViewMode = "day" | "week" | "month";
@@ -755,6 +756,7 @@ function MonthChip({
   const [hovered, setHovered] = useState(false);
   const isFull = session.status === "full" || session.seats_total === 0;
   const start = parseTs(session.starts_at);
+  const color = formationColor(session.formation_slug);
 
   function onClick(e: React.MouseEvent) {
     e.stopPropagation();
@@ -790,8 +792,9 @@ function MonthChip({
         className={`block text-[10px] px-1.5 py-0.5 leading-tight truncate cursor-pointer transition-colors ${
           isFull
             ? "bg-gray/20 text-gray cursor-not-allowed"
-            : "bg-primary text-white hover:bg-primary-dark"
+            : "text-white hover:brightness-95"
         }`}
+        style={isFull ? undefined : { backgroundColor: color }}
       >
         <span className="font-semibold mr-1">
           {String(start.hh).padStart(2, "0")}h
@@ -992,6 +995,8 @@ function SessionBlock({
   const [hovered, setHovered] = useState(false);
   const isFull = session.status === "full" || session.seats_total === 0;
 
+  const color = formationColor(session.formation_slug);
+
   const { hh, mm, endHH, endMM } = blockTimesForDay(session, dayKey);
   const topHours = Math.max(0, hh + mm / 60 - TIME_START);
   const endHours = Math.min(HOURS, endHH + endMM / 60 - TIME_START);
@@ -1028,13 +1033,16 @@ function SessionBlock({
         className={`absolute left-0 right-0 m-0.5 p-2 text-left text-[11px] leading-tight overflow-hidden transition-all ${
           isFull
             ? "bg-gray/20 text-gray border border-gray/30 cursor-not-allowed"
-            : "bg-primary text-white border border-primary-dark hover:bg-primary-dark cursor-pointer"
+            : "text-white border cursor-pointer hover:brightness-95"
         }`}
         style={{
           top,
           height,
           left: `${leftPct}%`,
           width: `calc(${widthPct}% - 4px)`,
+          ...(isFull
+            ? {}
+            : { backgroundColor: color, borderColor: "rgba(0,0,0,0.18)" }),
         }}
       >
         <p className="font-semibold text-[10px]">
@@ -1080,6 +1088,7 @@ function SessionRowMobile({
 }) {
   const { addItem, openCart } = useCart();
   const isFull = session.status === "full" || session.seats_total === 0;
+  const color = formationColor(session.formation_slug);
   const { hh, mm, endHH, endMM } = blockTimesForDay(session, dayKey);
 
   function onClick() {
@@ -1103,8 +1112,11 @@ function SessionRowMobile({
       className={`w-full text-left p-3 border transition-colors ${
         isFull
           ? "bg-gray/10 text-gray border-gray/20 cursor-not-allowed"
-          : "bg-primary text-white border-primary-dark hover:bg-primary-dark"
+          : "text-white hover:brightness-95"
       }`}
+      style={
+        isFull ? undefined : { backgroundColor: color, borderColor: "rgba(0,0,0,0.18)" }
+      }
     >
       <p className="text-[11px] font-bold">
         {String(hh).padStart(2, "0")}h{String(mm).padStart(2, "0")} –{" "}
