@@ -8,9 +8,14 @@ import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
 import { FaqAccordion } from "@/components/FaqAccordion";
 import { Decor } from "@/components/Decor";
 import { Reveal } from "@/components/Reveal";
-import { getPriceMap, getApprovedReviews } from "@/lib/queries";
+import {
+  getPriceMap,
+  getApprovedReviews,
+  getPromotionFlyers,
+} from "@/lib/queries";
 import { ContactForm } from "@/components/ContactForm";
 import { ReviewForm } from "@/components/ReviewForm";
+import { PromoFlyerModal } from "@/components/PromoFlyerModal";
 import {
   cacesFormations,
   company,
@@ -47,9 +52,10 @@ const formationBenefits = [
 ];
 
 export default async function Home() {
-  const [priceMap, approvedReviews] = await Promise.all([
+  const [priceMap, approvedReviews, promoFlyers] = await Promise.all([
     getPriceMap(),
     getApprovedReviews(),
+    getPromotionFlyers(),
   ]);
   const cacesWithPrices = cacesFormations.map((f) => ({
     ...f,
@@ -60,6 +66,8 @@ export default async function Home() {
 
   return (
     <>
+      <PromoFlyerModal flyers={promoFlyers} />
+
       <HeroSlider />
 
       {/* Chiffres clés */}

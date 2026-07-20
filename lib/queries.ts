@@ -70,6 +70,47 @@ export async function getActivePromotions(): Promise<string[]> {
   }
 }
 
+export type PromoFlyer = {
+  id: string;
+  label: string;
+  url: string;
+  mime: string | null;
+};
+
+/**
+ * Flyers de promotion à afficher au public (documents de catégorie
+ * « promotion », dans le dossier `promotions/`). Génère une URL signée par
+ * flyer. Nécessite les policies d'accès anon (voir db/promotion_flyers.sql).
+ */
+export async function getPromotionFlyers(): Promise<PromoFlyer[]> {
+  try {
+    const { data, error } = await supabasePublic
+      .from("documents")
+      .select("id, label, file_path, mime_type")
+      .eq("category", "promotion")
+      .order("created_at", { ascending: false });
+    if (error || !data || data.length === 0) return [];
+
+    const flyers: PromoFlyer[] = [];
+    for (const d of data) {
+      const { data: signed } = await supabasePublic.storage
+        .from("documents")
+        .createSignedUrl(d.file_path as string, 3600);
+      if (signed?.signedUrl) {
+        flyers.push({
+          id: d.id as string,
+          label: d.label as string,
+          url: signed.signedUrl,
+          mime: (d.mime_type as string | null) ?? null,
+        });
+      }
+    }
+    return flyers;
+  } catch {
+    return [];
+  }
+}
+
 /** Avis clients approuvés (les plus récents d'abord). */
 export async function getApprovedReviews(): Promise<Testimonial[]> {
   try {
