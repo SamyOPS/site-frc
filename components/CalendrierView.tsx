@@ -1,10 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useCart } from "@/lib/cart";
 import { formationColor } from "@/lib/formationColors";
+import { formationImage } from "@/lib/formationImages";
 import type { PublicSession } from "@/lib/queries";
 
 type ViewMode = "day" | "week" | "month";
@@ -868,6 +870,7 @@ function SessionHoverCard({
   const startK = session.starts_at.slice(0, 10);
   const endK = session.ends_at?.slice(0, 10) ?? startK;
   const multiDay = startK !== endK;
+  const img = formationImage(session.formation_slug);
 
   return createPortal(
     <div
@@ -875,6 +878,17 @@ function SessionHoverCard({
       style={{ left: pos.left, top: pos.top, width: 300 }}
       className="fixed z-[100] bg-white border border-rule shadow-[0_20px_60px_-15px_rgba(0,0,0,0.35)] pointer-events-none"
     >
+      {img && (
+        <div className="relative w-full aspect-[16/9] bg-white border-b border-rule">
+          <Image
+            src={img}
+            alt=""
+            fill
+            sizes="300px"
+            className="object-contain p-2"
+          />
+        </div>
+      )}
       <div className="px-4 py-3 border-b border-rule bg-light">
         <p className="text-[10px] uppercase tracking-[0.18em] text-primary font-medium">
           {formatLongDate(dayKey)}

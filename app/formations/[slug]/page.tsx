@@ -3,6 +3,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCartButton } from "@/components/AddToCartButton";
+import { CategoryImage } from "@/components/CategoryImage";
+import { CategoryImageCarousel } from "@/components/CategoryImageCarousel";
+import {
+  CategorySelectionProvider,
+} from "@/components/CategorySelection";
 import { FactCard } from "@/components/FactCard";
 import { HeroNav } from "@/components/HeroNav";
 import { Reveal } from "@/components/Reveal";
@@ -48,6 +53,11 @@ export default async function FormationPage({ params }: { params: Params }) {
   const priceMap = await getPriceMap();
   const priceFrom = priceMap[formation.slug] ?? formation.priceFrom;
 
+  // Pour les CACES : carrousel d'images par catégorie + catégorie liée au devis.
+  const cacesCategories =
+    formation.category === "caces" ? formation.categoriesDetail ?? [] : [];
+  const isCaces = cacesCategories.length > 0;
+
   return (
     <>
       <div className="bg-ink">
@@ -78,7 +88,10 @@ export default async function FormationPage({ params }: { params: Params }) {
       </section>
 
       <section className="container-x py-12 md:py-16">
-        <div className="grid lg:grid-cols-[1.3fr_1fr] gap-10 lg:gap-14">
+        <CategorySelectionProvider
+          initialCurrent={isCaces ? cacesCategories[0].code : null}
+        >
+          <div className="grid lg:grid-cols-[1.3fr_1fr] gap-10 lg:gap-14">
           <Reveal>
             <p className="text-base md:text-lg text-ink leading-relaxed normal-case">
               {formation.description}
@@ -122,26 +135,31 @@ export default async function FormationPage({ params }: { params: Params }) {
                 }
                 priceFrom={priceFrom ?? null}
                 categoriesDetail={formation.categoriesDetail}
+                sharedCategory={isCaces}
               />
             </div>
           </Reveal>
 
           <Reveal delay={120} className="lg:sticky lg:top-28">
-            {formation.image && (
-              <div className="relative aspect-[4/3] bg-white border border-rule mb-6 overflow-hidden">
-                <Image
-                  src={formation.image}
-                  alt={`Illustration ${formation.title}`}
-                  fill
-                  sizes="(min-width: 1024px) 40vw, 100vw"
-                  className={
-                    formation.category === "caces"
-                      ? "object-contain p-6"
-                      : "object-cover"
-                  }
-                  priority
-                />
-              </div>
+            {isCaces ? (
+              <CategoryImageCarousel
+                slug={formation.slug}
+                code={formation.code}
+                categories={cacesCategories}
+              />
+            ) : (
+              formation.image && (
+                <div className="relative aspect-[4/3] bg-white border border-rule mb-6 overflow-hidden">
+                  <Image
+                    src={formation.image}
+                    alt={`Illustration ${formation.title}`}
+                    fill
+                    sizes="(min-width: 1024px) 40vw, 100vw"
+                    className="object-cover"
+                    priority
+                  />
+                </div>
+              )
             )}
 
             <dl className="bg-light border border-rule divide-y divide-rule">
@@ -185,7 +203,8 @@ export default async function FormationPage({ params }: { params: Params }) {
               )}
             </dl>
           </Reveal>
-        </div>
+          </div>
+        </CategorySelectionProvider>
       </section>
 
       <section className="bg-light py-20 md:py-28 border-t border-rule">
@@ -234,21 +253,54 @@ export default async function FormationPage({ params }: { params: Params }) {
                       {formation.code ? "Catégories" : "Niveaux"}
                     </span>
                   </div>
-                  <ul className="border-t border-rule">
-                    {formation.categoriesDetail.map((c) => (
-                      <li
-                        key={c.code}
-                        className="flex gap-4 py-3 border-b border-rule"
-                      >
-                        <span className="font-mono text-xs font-semibold text-primary shrink-0 min-w-[44px]">
-                          {c.code}
-                        </span>
-                        <span className="text-sm text-ink leading-snug">
-                          {c.label}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+                  {formation.category === "caces" ? (
+                    <ul className="grid gap-4 sm:grid-cols-2">
+                      {formation.categoriesDetail.map((c) => {
+                        const safe = c.code.replace(/[^a-zA-Z0-9]/g, "");
+                        const base = `/caces/${formation.slug}/${safe}`;
+                        return (
+                          <li
+                            key={c.code}
+                            className="flex items-center gap-4 border border-rule bg-white p-4"
+                          >
+                            <CategoryImage
+                              srcs={[
+                                `${base}.png`,
+                                `${base}.jpg`,
+                                `${base}.jpeg`,
+                                `${base}.webp`,
+                              ]}
+                              alt={`CACES® ${formation.code} — catégorie ${c.code}`}
+                            />
+                            <div className="min-w-0">
+                              <span className="font-mono text-xs font-semibold text-primary">
+                                {c.code}
+                              </span>
+                              <p className="mt-1 text-sm text-ink leading-snug">
+                                {c.label}
+                              </p>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : (
+                    <ul className="border-t border-rule">
+                      {formation.categoriesDetail.map((c) => (
+                        <li
+                          key={c.code}
+                          className="flex gap-4 py-3 border-b border-rule"
+                        >
+                          <span className="font-mono text-xs font-semibold text-primary shrink-0 min-w-[44px]">
+                            {c.code}
+                          </span>
+                          <span className="text-sm text-ink leading-snug">
+                            {c.label}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               )}
 

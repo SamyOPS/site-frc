@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useCart } from "@/lib/cart";
+import { useCategorySelection } from "@/components/CategorySelection";
 
 type CategoryDetail = { code: string; label: string };
 
@@ -10,6 +11,8 @@ type Props = {
   title: string;
   priceFrom: number | null;
   categoriesDetail?: CategoryDetail[];
+  /** CACES : les catégories (multi) sont partagées avec le carrousel. */
+  sharedCategory?: boolean;
 };
 
 export function AddToCartButton({
@@ -17,16 +20,29 @@ export function AddToCartButton({
   title,
   priceFrom,
   categoriesDetail,
+  sharedCategory = false,
 }: Props) {
   const { addItem } = useCart();
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const shared = useCategorySelection();
+  // Sélection interne (utilisée hors CACES) ; en mode CACES on lit le contexte.
+  const [localSelected, setLocalSelected] = useState<Set<string>>(new Set());
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
 
   const hasCategories = !!categoriesDetail && categoriesDetail.length > 0;
 
+  // Codes retenus pour le devis, selon le mode.
+  const selectedCodes = sharedCategory
+    ? shared.selected
+    : [...localSelected];
+
   function toggle(code: string) {
-    setSelected((prev) => {
+    if (sharedCategory) {
+      shared.toggle(code);
+      shared.setCurrent(code); // affiche l'image de la catégorie cliquée
+      return;
+    }
+    setLocalSelected((prev) => {
       const next = new Set(prev);
       if (next.has(code)) next.delete(code);
       else next.add(code);
@@ -39,14 +55,14 @@ export function AddToCartButton({
       slug,
       title,
       priceFrom,
-      categories: [...selected],
+      categories: selectedCodes,
       quantity,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2200);
   }
 
-  const canAdd = !hasCategories || selected.size > 0;
+  const canAdd = !hasCategories || selectedCodes.length > 0;
 
   return (
     <div className="bg-light border border-rule p-5 md:p-6">
@@ -62,7 +78,7 @@ export function AddToCartButton({
           </p>
           <div className="flex flex-wrap gap-2">
             {categoriesDetail!.map((c) => {
-              const isSelected = selected.has(c.code);
+              const isSelected = selectedCodes.includes(c.code);
               return (
                 <button
                   key={c.code}
@@ -80,9 +96,10 @@ export function AddToCartButton({
               );
             })}
           </div>
-          {selected.size === 0 && (
+          {selectedCodes.length === 0 && (
             <p className="mt-2 text-[11px] text-gray normal-case">
-              Sélectionnez au moins une catégorie.
+              Sélectionnez une ou plusieurs catégories
+              {sharedCategory ? " (ou via les flèches de l'image)" : ""}.
             </p>
           )}
         </div>

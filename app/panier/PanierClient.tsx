@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { itemKey, useCart } from "@/lib/cart";
+import { CartItemThumb } from "@/components/CartItemThumb";
 import { submitQuoteRequest } from "./actions";
 
 const inputClass =
@@ -110,6 +111,11 @@ export function PanierClient() {
                 key={key}
                 className="flex flex-col sm:flex-row sm:items-start gap-4 py-5 border-b border-rule"
               >
+                <CartItemThumb
+                  slug={item.slug}
+                  categories={item.categories}
+                  size="lg"
+                />
                 <div className="flex-1">
                   <Link
                     href={`/formations/${item.slug}`}

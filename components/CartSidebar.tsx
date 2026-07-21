@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { itemKey, useCart } from "@/lib/cart";
+import { CartItemThumb } from "@/components/CartItemThumb";
 
 export function CartSidebar() {
   const {
@@ -108,47 +109,56 @@ export function CartSidebar() {
                 const key = itemKey(item.slug, item.categories, item.sessionId);
                 return (
                   <li key={key} className="px-5 py-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <Link
-                        href={`/formations/${item.slug}`}
-                        onClick={closeCart}
-                        className="text-sm font-medium text-ink hover:text-primary transition-colors leading-snug flex-1"
-                      >
-                        {item.title}
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => removeItem(key)}
-                        className="text-gray hover:text-red-500 transition-colors shrink-0"
-                        aria-label={`Retirer ${item.title}`}
-                      >
-                        <svg
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          className="w-4 h-4"
-                          aria-hidden="true"
-                        >
-                          <path d="M6 6l12 12M18 6L6 18" />
-                        </svg>
-                      </button>
-                    </div>
+                    <div className="flex gap-3">
+                      <CartItemThumb
+                        slug={item.slug}
+                        categories={item.categories}
+                        size="sm"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-3">
+                          <Link
+                            href={`/formations/${item.slug}`}
+                            onClick={closeCart}
+                            className="text-sm font-medium text-ink hover:text-primary transition-colors leading-snug flex-1"
+                          >
+                            {item.title}
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => removeItem(key)}
+                            className="text-gray hover:text-red-500 transition-colors shrink-0"
+                            aria-label={`Retirer ${item.title}`}
+                          >
+                            <svg
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              className="w-4 h-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M6 6l12 12M18 6L6 18" />
+                            </svg>
+                          </button>
+                        </div>
 
-                    {item.sessionLabel && (
-                      <p className="mt-1.5 text-xs text-ink normal-case">
-                        <span className="text-gray">Session :</span>{" "}
-                        <span className="font-medium">{item.sessionLabel}</span>
-                      </p>
-                    )}
-                    {item.categories.length > 0 && (
-                      <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-primary font-medium">
-                        Cat. {item.categories.join(" · ")}
-                      </p>
-                    )}
+                        {item.sessionLabel && (
+                          <p className="mt-1.5 text-xs text-ink normal-case">
+                            <span className="text-gray">Session :</span>{" "}
+                            <span className="font-medium">
+                              {item.sessionLabel}
+                            </span>
+                          </p>
+                        )}
+                        {item.categories.length > 0 && (
+                          <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-primary font-medium">
+                            Cat. {item.categories.join(" · ")}
+                          </p>
+                        )}
 
-                    <div className="mt-3 flex items-center justify-between gap-3">
+                        <div className="mt-3 flex items-center justify-between gap-3">
                       <div className="inline-flex items-stretch border border-rule">
                         <button
                           type="button"
@@ -172,11 +182,13 @@ export function CartSidebar() {
                         </button>
                       </div>
 
-                      {item.priceFrom != null && (
-                        <p className="text-sm font-semibold text-ink whitespace-nowrap">
-                          Dès {item.priceFrom * item.quantity} €
-                        </p>
-                      )}
+                          {item.priceFrom != null && (
+                            <p className="text-sm font-semibold text-ink whitespace-nowrap">
+                              Dès {item.priceFrom * item.quantity} €
+                            </p>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </li>
                 );
