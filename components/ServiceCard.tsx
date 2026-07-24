@@ -2,9 +2,9 @@ import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import type { CacesFormation } from "@/lib/data";
 import { Placeholder } from "@/components/Placeholder";
-import machineR489 from "@/public/machine/CASESR489-CEYMC3bi.png";
-import machineR486 from "@/public/machine/cacesr486.png";
-import machineR482 from "@/public/machine/cacesr482.png";
+import machineR489 from "@/public/caces/caces-r489/1A.png";
+import machineR486 from "@/public/caces/caces-r486/A.png";
+import machineR482 from "@/public/caces/caces-r482/A.png";
 
 const imagesByCode: Record<string, StaticImageData> = {
   R489: machineR489,

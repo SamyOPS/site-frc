@@ -1,7 +1,7 @@
 import type { StaticImageData } from "next/image";
-import machineR489 from "@/public/machine/CASESR489-CEYMC3bi.png";
-import machineR486 from "@/public/machine/cacesr486.png";
-import machineR482 from "@/public/machine/cacesr482.png";
+import machineR489 from "@/public/caces/caces-r489/1A.png";
+import machineR486 from "@/public/caces/caces-r486/A.png";
+import machineR482 from "@/public/caces/caces-r482/A.png";
 import imgSst from "@/public/autre_formation/sst.png";
 import imgTravailHauteur from "@/public/autre_formation/travail-en-hauteur.png";
 import imgHarnais from "@/public/autre_formation/port-du-harnais.png";

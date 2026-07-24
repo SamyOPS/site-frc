@@ -15,7 +15,12 @@
       "PowerShell(cd \"c:/Users/azeez/Desktop/site-frc\"; $mine=\\(npx tsx _cw.ts 2>$null\\).Trim\\(\\); $ref=\\(python _refcw.py\\).Trim\\(\\); if \\($mine -eq $ref\\) { Write-Output \"CODEWORDS IDENTICAL\" } else { Write-Output \"CODEWORDS DIFFER\"; Write-Output \"mine: $mine\"; Write-Output \"ref : $ref\" })",
       "PowerShell(cd \"c:/Users/azeez/Desktop/site-frc\"; $mine=\\(npx tsx _cw.ts 2>$null\\).Trim\\(\\); $ref=\\(python _refcw.py\\).Trim\\(\\); if \\($mine -eq $ref\\) { Write-Output \"CODEWORDS IDENTICAL\" } else { Write-Output \"DIFFER\"; Write-Output \"mine: $mine\"; Write-Output \"ref : $ref\" })",
       "Bash(rm -f _qrtest.ts _qrdump.ts _cw.ts _refcw.py _decode.py _batch.ts _batchdecode.py _mine.txt _seg.txt _inputs.txt _mine.png _b0.txt _b1.txt _b2.txt _b3.txt _b4.txt _b5.txt)",
-      "Bash(ls _*.*)"
+      "Bash(ls _*.*)",
+      "Bash(mkdir -p public/caces/caces-r489 public/caces/caces-r486 public/caces/caces-r482)",
+      "Bash(mv public/machine/CASESR489CAT1A.png public/caces/caces-r489/1A.png)",
+      "Bash(mv public/machine/CASESR489CAT1B.png public/caces/caces-r489/1B.png)",
+      "Bash(mv public/machine/CASESR489CAT2B.png public/caces/caces-r489/2B.png)",
+      "Bash(mv public/machine/CASESR489CAT3.png  public/caces/caces-r489/3.png)"
     ]
   }
 }
