@@ -161,17 +161,72 @@ ${message ? `Message du demandeur\n--------------------\n${message}` : ""}
 </table>
 </body></html>`;
 
-  const result = await sendMail({
-    to: company.email,
+  // Destinataire de la notification (configurable) ; repli sur l'email société.
+  const notifyTo = process.env.NOTIFY_EMAIL || company.email;
+
+  const notif = await sendMail({
+    to: notifyTo,
     replyTo: email,
     subject,
     text,
     html,
   });
 
-  if (!result.ok) {
-    return { ok: false, error: result.error ?? "Envoi du message impossible." };
+  if (!notif.ok) {
+    return { ok: false, error: notif.error ?? "Envoi du message impossible." };
   }
+
+  // Email de confirmation au demandeur (best-effort : n'échoue pas la demande).
+  const confirmText = `Bonjour ${name},
+
+Merci pour votre demande de devis. Nous l'avons bien reçue et un membre de l'équipe FRC Technique vous recontactera sous 48h ouvrées avec une proposition adaptée.
+
+Récapitulatif de votre demande
+------------------------------
+${renderItemsText(items)}
+
+${subtotal > 0 ? `Sous-total estimé : ${subtotal} €` : "Sous-total : sur devis"}
+
+À bientôt,
+L'équipe FRC Technique
+${company.email}
+`;
+
+  const confirmHtml = `<!doctype html>
+<html><body style="margin:0;padding:24px;background:#f4f5f7;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#050608">
+<table style="max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb;width:100%;border-collapse:collapse">
+  <tr><td style="padding:24px 28px 0">
+    <div style="font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#16a34a;font-weight:500">FRC Technique</div>
+    <h1 style="margin:8px 0 0;font-size:22px;font-weight:700;color:#050608">Votre demande de devis a bien été reçue</h1>
+  </td></tr>
+  <tr><td style="padding:16px 28px">
+    <p style="font-size:14px;line-height:1.6;margin:0">Bonjour ${escapeHtml(name)},</p>
+    <p style="font-size:14px;line-height:1.6;margin:12px 0 0">Merci pour votre demande. Nous l'avons bien reçue et vous recontacterons sous <strong>48h ouvrées</strong> avec une proposition adaptée.</p>
+  </td></tr>
+  <tr><td style="padding:0 28px 16px">
+    <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#8d9297;margin-bottom:8px">Récapitulatif</div>
+    ${renderItemsHtml(items)}
+    <div style="margin-top:16px;padding:14px 16px;background:#050608;color:#ffffff">
+      <span style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase">Sous-total estimé</span>
+      <span style="font-size:20px;font-weight:700;float:right">${subtotal > 0 ? `${subtotal} €` : "Sur devis"}</span>
+    </div>
+  </td></tr>
+  <tr><td style="padding:16px 28px 24px;border-top:1px solid #e5e7eb;font-size:12px;color:#374151">
+    À bientôt,<br/><strong>L'équipe FRC Technique</strong><br/>
+    <a href="mailto:${escapeHtml(company.email)}" style="color:#16a34a;text-decoration:none">${escapeHtml(
+      company.email
+    )}</a>
+  </td></tr>
+</table>
+</body></html>`;
+
+  await sendMail({
+    to: email,
+    replyTo: company.email,
+    subject: "Votre demande de devis — FRC Technique",
+    text: confirmText,
+    html: confirmHtml,
+  });
 
   return { ok: true };
 }
