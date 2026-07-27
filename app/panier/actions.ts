@@ -2,6 +2,7 @@
 
 import type { CartItem } from "@/lib/cart";
 import { company } from "@/lib/data";
+import { looksLikeBot } from "@/lib/antispam";
 import { escapeHtml, sendMail } from "@/lib/mailer";
 
 export type QuoteContact = {
@@ -9,6 +10,9 @@ export type QuoteContact = {
   email: string;
   phone: string;
   message: string;
+  /** Anti-spam : champ piège (doit rester vide) + horodatage d'ouverture. */
+  company?: string;
+  ts?: number;
 };
 
 export type QuoteResult = { ok: boolean; error?: string };
@@ -87,6 +91,18 @@ export async function submitQuoteRequest(
   const email = contact.email?.trim();
   const phone = contact.phone?.trim();
   const message = contact.message?.trim() ?? "";
+
+  // Anti-spam : rejet silencieux des bots (faux succès, aucun email envoyé).
+  if (
+    looksLikeBot({
+      honeypot: contact.company,
+      ts: contact.ts,
+      identity: [name ?? ""],
+      content: [message],
+    })
+  ) {
+    return { ok: true };
+  }
 
   if (!name || !email || !phone) {
     return { ok: false, error: "Nom, email et téléphone sont requis." };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { submitContact, type ContactFormState } from "@/app/actions/contact";
 
 const initial: ContactFormState = { status: "idle", message: "" };
@@ -11,6 +11,10 @@ type Props = {
 
 export function ContactForm({ variant = "dark" }: Props) {
   const [state, action, pending] = useActionState(submitContact, initial);
+  // Horodatage d'ouverture du formulaire (anti-spam : rempli seulement si le JS
+  // s'exécute, et permet de rejeter les envois instantanés des bots).
+  const [ts, setTs] = useState("");
+  useEffect(() => setTs(String(Date.now())), []);
   const isDark = variant === "dark";
 
   const inputBase = isDark
@@ -25,6 +29,29 @@ export function ContactForm({ variant = "dark" }: Props) {
       className="flex flex-col gap-5"
       aria-describedby="contact-form-status"
     >
+      {/* Anti-spam : champ piège caché (rempli uniquement par les bots) */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          left: "-9999px",
+          width: 1,
+          height: 1,
+          overflow: "hidden",
+        }}
+      >
+        <label>
+          Ne pas remplir
+          <input
+            type="text"
+            name="company"
+            tabIndex={-1}
+            autoComplete="off"
+          />
+        </label>
+      </div>
+      <input type="hidden" name="_ts" value={ts} readOnly />
+
       <div className="grid sm:grid-cols-2 gap-4">
         <div className="flex flex-col gap-2">
           <label

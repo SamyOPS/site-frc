@@ -1,7 +1,11 @@
 "use server";
 
 import { company } from "@/lib/data";
+import { looksLikeBot } from "@/lib/antispam";
 import { escapeHtml, sendMail } from "@/lib/mailer";
+
+const SUCCESS_MESSAGE =
+  "Merci ! Nous avons bien reçu votre demande, un membre de l'équipe vous recontactera sous 24h ouvrées.";
 
 export type ContactFormState = {
   status: "idle" | "success" | "error";
@@ -17,6 +21,21 @@ export async function submitContact(
   const phone = String(formData.get("phone") ?? "").trim();
   const subject = String(formData.get("subject") ?? "").trim();
   const message = String(formData.get("message") ?? "").trim();
+  const honeypot = String(formData.get("company") ?? "");
+  const ts = Number(formData.get("_ts") ?? 0);
+
+  // Anti-spam : on rejette silencieusement les bots (faux succès, aucun email
+  // envoyé) pour ne pas leur signaler le blocage.
+  if (
+    looksLikeBot({
+      honeypot,
+      ts,
+      identity: [name, subject],
+      content: [message],
+    })
+  ) {
+    return { status: "success", message: SUCCESS_MESSAGE };
+  }
 
   if (!name || !email || !message) {
     return {
@@ -152,9 +171,5 @@ ${company.email}
     html: confirmHtml,
   });
 
-  return {
-    status: "success",
-    message:
-      "Merci ! Nous avons bien reçu votre demande, un membre de l'équipe vous recontactera sous 24h ouvrées.",
-  };
+  return { status: "success", message: SUCCESS_MESSAGE };
 }

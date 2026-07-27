@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { itemKey, useCart } from "@/lib/cart";
 import { CartItemThumb } from "@/components/CartItemThumb";
 import { submitQuoteRequest } from "./actions";
@@ -20,12 +20,16 @@ export function PanierClient() {
     phone: "",
     message: "",
   });
+  // Anti-spam : champ piège (honeypot) + horodatage d'ouverture.
+  const [honeypot, setHoneypot] = useState("");
+  const [ts, setTs] = useState(0);
+  useEffect(() => setTs(Date.now()), []);
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     startTransition(async () => {
-      const res = await submitQuoteRequest(items, form);
+      const res = await submitQuoteRequest(items, { ...form, company: honeypot, ts });
       if (res.ok) {
         setSent(true);
         clear();
@@ -215,6 +219,29 @@ export function PanierClient() {
         onSubmit={onSubmit}
         className="bg-light border border-rule p-6 md:p-8 self-start"
       >
+        {/* Anti-spam : champ piège caché (rempli uniquement par les bots) */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            left: "-9999px",
+            width: 1,
+            height: 1,
+            overflow: "hidden",
+          }}
+        >
+          <label>
+            Ne pas remplir
+            <input
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              value={honeypot}
+              onChange={(e) => setHoneypot(e.target.value)}
+            />
+          </label>
+        </div>
+
         <div className="flex items-center gap-3 mb-5">
           <span className="block w-8 h-px bg-primary" />
           <span className="eyebrow">Vos coordonnées</span>
