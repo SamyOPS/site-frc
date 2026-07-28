@@ -21,7 +21,9 @@
       "Bash(mv public/machine/CASESR489CAT1B.png public/caces/caces-r489/1B.png)",
       "Bash(mv public/machine/CASESR489CAT2B.png public/caces/caces-r489/2B.png)",
       "Bash(mv public/machine/CASESR489CAT3.png  public/caces/caces-r489/3.png)",
-      "Bash(node -e \"const {loadEnvConfig}=require\\('@next/env'\\); loadEnvConfig\\(process.cwd\\(\\)\\); const p=String\\(process.env.SMTP_PASSWORD||''\\); console.log\\('SMTP_HOST =', process.env.SMTP_HOST\\); console.log\\('SMTP_USER =', process.env.SMTP_USER\\); console.log\\('SMTP_FROM =', process.env.SMTP_FROM\\); console.log\\('SMTP_PASSWORD expansé et valide :', p.startsWith\\('re_'\\), '\\(longueur '+p.length+'\\)'\\);\")"
+      "Bash(node -e \"const {loadEnvConfig}=require\\('@next/env'\\); loadEnvConfig\\(process.cwd\\(\\)\\); const p=String\\(process.env.SMTP_PASSWORD||''\\); console.log\\('SMTP_HOST =', process.env.SMTP_HOST\\); console.log\\('SMTP_USER =', process.env.SMTP_USER\\); console.log\\('SMTP_FROM =', process.env.SMTP_FROM\\); console.log\\('SMTP_PASSWORD expansé et valide :', p.startsWith\\('re_'\\), '\\(longueur '+p.length+'\\)'\\);\")",
+      "PowerShell(pip install Pillow --quiet 2>&1)",
+      "PowerShell(python -c \"from PIL import Image; im=Image.open\\('c:/Users/azeez/Desktop/site-frc/public/new logo frc.png'\\); print\\('size', im.size, 'mode', im.mode\\)\")"
     ]
   }
 }
